@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EHE Community Web - Beta</title>
+<link rel="icon" type="image/png" href="favicon.png" />
+
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #667eea;
+            --primary-dark: #5a67d8;
+            --secondary-color: #764ba2;
+            --accent-color: #f093fb;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f7fafc;
+            --border-color: #e2e8f0;
+            --shadow: 0 10px 25px rgba(0,0,0,0.1);
+            --shadow-lg: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        [data-theme="dark"] {
+            --text-primary: #f7fafc;
+            --text-secondary: #e2e8f0;
+            --bg-primary: #1a202c;
+            --bg-secondary: #2d3748;
+            --border-color: #4a5568;
+            --shadow: 0 10px 25px rgba(0,0,0,0.3);
+            --shadow-lg: 0 20px 40px rgba(0,0,0,0.4);
+            /* KEIN Hintergrund im Dark Mode, um den Verlauf beizubehalten */
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        #particlesCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        .loading-dots {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: bounce 1.4s ease-in-out infinite both;
+        }
+
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+
+        .loading-text {
+            color: white;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 500;
+            line-height: 1.6;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        .header {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            padding: 15px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .main-content {
+            margin-top: 80px;
+            min-height: calc(100vh - 80px);
+        }
+
+        .hero {
+            text-align: center;
+            padding: 100px 20px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            margin: 20px;
+            border-radius: 20px;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #fff, rgba(255,255,255,0.8));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .content-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .feature-card {
+            background: rgba(255,255,255,0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .contact-section {
+            background: rgba(255,255,255,0.95);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            margin: 20px;
+        }
+
+        .contact-email {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin: 20px 0;
+            font-weight: 600;
+        }
+
+        .form-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .form-container {
+            background: var(--bg-primary);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+            animation: slideIn 0.3s ease;
+        }
+
+        .form-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+        }
+
+        .form-close:hover {
+            color: var(--error-color);
+        }
+
+        .form-title {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-submit {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .form-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .form-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .form-link {
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text-secondary);
+        }
+
+        .form-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .form-link a:hover {
+            text-decoration: underline;
+        }
+
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            z-index: 3000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .notification {
+            transform: translateX(400px);
+            visibility: hidden;
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease, visibility 0s linear 0.3s;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+            visibility: visible;
+            opacity: 1;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .notification.success { background: var(--success-color); }
+        .notification.error { background: var(--error-color); }
+        .notification.warning { background: var(--warning-color); }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 8px 15px;
+            border-radius: 25px;
+            background: rgba(102, 126, 234, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .user-profile:hover {
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .welcome-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2500;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .welcome-box {
+            background: var(--bg-primary);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            position: relative;
+            animation: slideIn 0.5s ease;
+        }
+
+        .welcome-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .welcome-box h2 {
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            font-size: 24px;
+        }
+
+        .welcome-box p {
+            margin-bottom: 30px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--bg-primary);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            padding: 10px;
+            min-width: 150px;
+            z-index: 1000;
+            margin-top: 5px;
+        }
+
+        .dropdown-item {
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+            color: var(--text-primary);
+        }
+
+        .dropdown-item:hover {
+            background: var(--bg-secondary);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    
+[data-theme="dark"] .form-container {
+    background: #2d3748;
+    color: #f7fafc;
+}
+[data-theme="dark"] .form-input {
+    background: #1a202c;
+    color: #f7fafc;
+    border-color: #4a5568;
+}
+[data-theme="dark"] .form-label {
+    color: #e2e8f0;
+}
+[data-theme="dark"] .form-close {
+    color: #e2e8f0;
+}
+
+#themeToggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 5000;
+}
+#themeToggle:hover {
+    background: var(--primary-color);
+    color: white;
+}
+[data-theme="dark"] #themeToggle {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .feature-card,
+[data-theme="dark"] .contact-section,
+[data-theme="dark"] .hero,
+[data-theme="dark"] .form-container,
+[data-theme="dark"] .welcome-box {
+    background: #2d3748 !important;
+    color: #f7fafc !important;
+}
+
+[data-theme="dark"] .hero h1,
+[data-theme="dark"] .feature-card h3,
+[data-theme="dark"] .contact-section h2,
+[data-theme="dark"] .form-title {
+    color: #f7fafc !important;
+}
+
+[data-theme="dark"] .hero p,
+[data-theme="dark"] .feature-card p,
+[data-theme="dark"] .contact-section .contact-email,
+[data-theme="dark"] .form-label {
+    color: #e2e8f0 !important;
+}
+
+[data-theme="dark"] body {
+    background: #1a202c !important;
+}
+
+[data-theme="dark"] .header {
+    background: rgba(26, 32, 44, 0.95) !important;
+    box-shadow: var(--shadow-lg) !important;
+}
+
+[data-theme="dark"] .nav-link {
+    color: #e2e8f0 !important;
+}
+
+[data-theme="dark"] .nav-link:hover {
+    color: var(--accent-color) !important;
+}
+
+[data-theme="dark"] .logo {
+    -webkit-text-fill-color: #f7fafc !important;
+}
+
+#helpCenterButton {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 22px;
+    font-weight: bold;
+    box-shadow: var(--shadow);
+    text-align: center;
+    line-height: 46px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 5000;
+}
+#helpCenterButton:hover {
+    background: var(--primary-color);
+    color: white;
+}
+[data-theme="dark"] #helpCenterButton {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.hamburger {
+  display: none;
+  font-size: 28px;
+  cursor: pointer;
+}
+.mobile-nav {
+  display: none;
+  flex-direction: column;
+  background: var(--bg-primary);
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  z-index: 1100;
+  box-shadow: var(--shadow-lg);
+  border-radius: 10px;
+}
+.mobile-nav .nav-link {
+  padding: 15px;
+  text-align: center;
+}
+@media (max-width: 768px) {
+  .hamburger {
+    display: block;
+  }
+}
+</style>
+<link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet"/>
+</head>
+<body>
+<canvas id="particlesCanvas"></canvas>
+<div class="welcome-overlay" id="welcomeOverlay" style="display: none;">
+<div class="welcome-box">
+<button class="welcome-close" onclick="closeWelcome()">×</button>
+<h2>👋 Willkommen bei der EHE Community!</h2>
+<p>Tritt unserem Discord bei und sei Teil unserer wachsenden Community.</p>
+<a class="btn btn-primary" href="https://discord.gg/QjnJJWK8U8" target="_blank">Zum Discord</a>
+</div>
+</div>
+<div class="loading-screen" id="loadingScreen">
+<div class="loading-spinner"></div>
+<div class="loading-dots">
+<div class="dot"></div><div class="dot"></div><div class="dot"></div>
+</div>
+<div class="loading-text">
+        Willkommen bei EHE Community Web<br/>Gemeinsam. Stark. Vernetzt
+    </div>
+</div>
+<header class="header">
+<div class="nav-container">
+<div class="logo">EHE Community Beta</div>
+<nav class="nav-links">
+<a class="nav-link" href="#">Home</a>
+<a class="nav-link" href="#">Community</a>
+<a class="nav-link" href="#">Events</a>
+<a class="nav-link" href="#">Kontakt</a>
+</nav>
+<div class="auth-buttons" id="authButtons">
+<button class="btn btn-secondary" onclick="showLoginForm()">Anmelden</button>
+<button class="btn btn-primary" onclick="showRegisterForm()">Registrieren</button>
+</div>
+<div class="user-profile" id="userProfile" style="display: none;">
+<button id="activityButton" title="Aktivitätsübersicht" style="background: transparent; border: none; font-size: 20px; cursor: pointer;">📊</button>
+
+<div class="user-avatar" id="userAvatar" style="display: flex;">U</div>
+<span id="userName">User</span>
+<div class="user-dropdown" id="userDropdown" style="display: none;"><div class="dropdown-item" onclick="showEditProfileForm()">Profil bearbeiten</div><div class="dropdown-item" onclick="logout()">Logout</div></div></div>
+<div class="hamburger" id="hamburger">☰</div>
+<div class="mobile-nav" id="mobileNav">
+<a class="nav-link" href="#">Home</a>
+<a class="nav-link" href="#">Community</a>
+<a class="nav-link" href="#">Events</a>
+<a class="nav-link" href="#">Kontakt</a>
+</div>
+</div>
+</header>
+<main class="main-content" id="mainContent">
+<section class="hero">
+<h1>Willkommen in der EHE Community</h1>
+<p>Gemeinsam stark, vernetzt und erfolgreich - Deine Community wartet auf dich!</p>
+</section>
+<div class="content-section">
+<div class="features-grid">
+<div class="feature-card" data-aos="fade-up">
+<div class="feature-icon">💬</div>
+<h3>Community Chat</h3>
+<p>Trete unserem Discord bei und chatte mit anderen Community-Mitgliedern in Echtzeit.</p>
+</div>
+<div class="feature-card" data-aos="fade-up">
+<div class="feature-icon">🎮</div>
+<h3>Gaming Events</h3>
+<p>Nimm an regelmäßigen Gaming-Events teil und erlebe spannende Wettkämpfe.</p>
+</div>
+<div class="feature-card" data-aos="fade-up">
+<div class="feature-icon">🏆</div>
+<h3>Achievements</h3>
+<p>Sammle Achievements und zeige deine Erfolge der Community.</p>
+</div>
+</div>
+<div class="contact-section">
+<h2>Kontakt</h2>
+<div class="contact-email">E-Mail: hamburgp20@gmail.com</div>
+<button class="btn btn-primary" onclick="showContactForm()">Kontaktformular</button>
+</div>
+</div>
+
+</main>
+<!-- Login Form -->
+<div class="form-overlay" id="loginOverlay">
+<div class="form-container">
+<button class="form-close" onclick="hideLoginForm()">×</button>
+<h2 class="form-title">Anmelden</h2>
+<form id="loginForm"><div id="loginError" style="color: var(--error-color); margin-bottom: 10px; display: none;"></div>
+<div class="form-group">
+<label class="form-label" for="loginEmail">E-Mail</label>
+<input class="form-input" id="loginEmail" required="" type="email"/>
+</div>
+<div class="form-group">
+<label class="form-label" for="loginPassword">Passwort</label>
+<input class="form-input" id="loginPassword" required="" type="password"/>
+</div>
+<button class="form-submit" id="loginSubmit" type="submit">Anmelden</button>
+</form>
+<div class="form-link">
+            Noch kein Konto? <a href="#" onclick="switchToRegister()">Registrieren</a>
+</div>
+</div>
+</div>
+<!-- Register Form -->
+<div class="form-overlay" id="registerOverlay">
+<div class="form-container">
+<button class="form-close" onclick="hideRegisterForm()">×</button>
+<h2 class="form-title">Registrieren</h2>
+<form id="registerForm"><div id="registerError" style="color: var(--error-color); margin-bottom: 10px; display: none;"></div>
+<div class="form-group">
+<label class="form-label" for="registerUsername">Benutzername</label>
+<input class="form-input" id="registerUsername" required="" type="text"/>
+</div>
+<div class="form-group">
+<label class="form-label" for="registerEmail">E-Mail</label>
+<input class="form-input" id="registerEmail" required="" type="email"/>
+</div>
+<div class="form-group">
+<label class="form-label" for="registerPassword">Passwort</label>
+<input class="form-input" id="registerPassword" required="" type="password"/>
+</div>
+<div class="form-group">
+<label class="form-label" for="confirmPassword">Passwort bestätigen</label>
+<input class="form-input" id="confirmPassword" required="" type="password"/>
+</div>
+<button class="form-submit" id="registerSubmit" type="submit">Registrieren</button>
+</form>
+<div class="form-link">
+            Bereits ein Konto? <a href="#" onclick="switchToLogin()">Anmelden</a>
+</div>
+</div>
+</div>
+<!-- Contact Form -->
+<div class="form-overlay" id="contactOverlay">
+<div class="form-container">
+<button class="form-close" onclick="hideContactForm()">×</button>
+<h2 class="form-title">Kontakt</h2>
+<form id="contactForm">
+<div class="form-group">
+<label class="form-label" for="contactName">Name</label>
+<input class="form-input" id="contactName" required="" type="text"/>
+</div>
+<div class="form-group">
+<label class="form-label" for="contactEmail">E-Mail</label>
+<input class="form-input" id="contactEmail" required="" type="email"/>
+</div>
+<div class="form-group">
+<label class="form-label" for="contactMessage">Nachricht</label>
+<textarea class="form-input" id="contactMessage" required="" rows="5"></textarea>
+</div>
+<button class="form-submit" type="submit">Nachricht senden</button>
+</form>
+</div>
+</div>
+<div class="notification" id="notification"></div>
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
+<script>
+function initParticles() {
+    tsParticles.load("particlesCanvas", {
+        fullScreen: { enable: false },
+        particles: {
+            number: { value: 60 },
+            color: { value: "#ffffff" },
+            shape: { type: "circle" },
+            opacity: { value: 0.5 },
+            size: { value: 3 },
+            move: { enable: true, speed: 1 },
+            links: {
+                enable: true,
+                distance: 150,
+                color: "#ffffff",
+                opacity: 0.4,
+                width: 1
+            }
+        },
+        background: {
+            color: "transparent"
+        }
+    });
+}
+</script>
+<script>
+// Partikel initialisieren
+function initParticles() {
+    tsParticles.load("particlesCanvas", {
+        fullScreen: { enable: false },
+        particles: {
+            number: { value: 60 },
+            color: { value: "#ffffff" },
+            shape: { type: "circle" },
+            opacity: { value: 0.5 },
+            size: { value: 3 },
+            move: { enable: true, speed: 1 },
+            links: {
+                enable: true,
+                distance: 150,
+                color: "#ffffff",
+                opacity: 0.4,
+                width: 1
+            }
+        },
+        background: {
+            color: "transparent"
+        }
+    });
+}
+
+// Fehlende Funktionen
+
+function showNotification(message, type = "success") {
+    const notification = document.getElementById("notification");
+    if (!notification) return;
+
+    notification.textContent = message;
+    notification.className = `notification ${type} show`;
+
+    setTimeout(() => {
+        notification.classList.remove("show");
+    }, 4000);
+}
+
+function showLoginForm() {
+    document.getElementById("loginOverlay").style.display = "flex";
+}
+
+function hideLoginForm() {
+    document.getElementById("loginOverlay").style.display = "none";
+}
+
+function showRegisterForm() {
+    document.getElementById("registerOverlay").style.display = "flex";
+}
+
+function hideRegisterForm() {
+    document.getElementById("registerOverlay").style.display = "none";
+}
+
+function switchToRegister() {
+    hideLoginForm();
+    showRegisterForm();
+}
+
+function switchToLogin() {
+    hideRegisterForm();
+    showLoginForm();
+}
+
+function showContactForm() {
+    document.getElementById("contactOverlay").style.display = "flex";
+}
+
+function hideContactForm() {
+    document.getElementById("contactOverlay").style.display = "none";
+}
+
+function showWelcomeOverlay() {
+    document.getElementById("welcomeOverlay").style.display = "flex";
+}
+
+function closeWelcome() {
+    document.getElementById("welcomeOverlay").style.display = "none";
+}
+
+function hideAllForms() {
+    hideLoginForm();
+    hideRegisterForm();
+    hideContactForm();
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+function hideAllForms() {
+    hideLoginForm();
+    hideRegisterForm();
+    hideContactForm();
+}
+</script>
+<script>
+// Zusätzliche Fehleranzeige im Formular
+function showLoginError(message) {
+    const errorBox = document.getElementById('loginError');
+    errorBox.textContent = message;
+    errorBox.style.display = 'block';
+}
+function showRegisterError(message) {
+    const errorBox = document.getElementById('registerError');
+    errorBox.textContent = message;
+    errorBox.style.display = 'block';
+}
+
+// Supabase Setup
+const { createClient } = supabase;
+const supabaseUrl = 'https://avojqdzjszauigitnuiy.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2b2pxZHpqc3phdWlnaXRudWl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4MTAzNTgsImV4cCI6MjA2NTM4NjM1OH0.1HessC_Wo4D7iIscEZieKBzL0hXteUUq6Dot5oQphvw';
+const supabaseClient = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: false
+  }
+});
+
+// Global Variables
+let currentUser = null;
+let currentTheme = 'light';
+
+// DOM Elements
+const loadingScreen = document.getElementById('loadingScreen');
+const welcomeOverlay = document.getElementById('welcomeOverlay');
+const authButtons = document.getElementById('authButtons');
+const userProfile = document.getElementById('userProfile');
+const loginOverlay = document.getElementById('loginOverlay');
+const registerOverlay = document.getElementById('registerOverlay');
+const contactOverlay = document.getElementById('contactOverlay');
+const notification = document.getElementById('notification');
+
+// Initialize App
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // Loading screen - 3 Sekunden
+        setTimeout(() => {
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 500);
+        }, 3000);
+
+        // Initialize particles
+        initParticles();
+
+        // Load saved theme from session
+        const savedTheme = sessionStorage.getItem('theme') || 'light';
+        setTheme(savedTheme);
+
+        // Check current user session
+        
+if (!currentUser) {
+    setTimeout(() => {
+        showWelcomeOverlay();
+    }, 3500);
+        }
+
+        // Auth state listener
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' && session) {
+                currentUser = session.user;
+                updateUIForLoggedInUser();
+                hideAllForms();
+                showNotification('Erfolgreich angemeldet!', 'success');
+            } else if (event === 'SIGNED_OUT') {
+                currentUser = null;
+                updateUIForLoggedOutUser();
+                showNotification('Erfolgreich abgemeldet!', 'success');
+            }
+        });
+
+    } catch (error) {
+        console.error('Initialisierungsfehler:', error);
+        showNotification('Anwendung konnte nicht initialisiert werden', 'error');
+    }
+});
+
+// Theme Functions
+function setTheme(theme) {
+    currentTheme = theme;
+    if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+        document.documentElement.removeAttribute('data-theme');
+    }
+    sessionStorage.setItem('theme', theme);
+}
+
+// UI Update Functions
+function updateUIForLoggedInUser() {
+    authButtons.style.display = 'none';
+    userProfile.style.display = 'flex';
+    
+    if (currentUser) {
+        const userName = currentUser.user_metadata?.username || currentUser.email.split('@')[0];
+        document.getElementById('userName').textContent = userName;
+        document.getElementById('userAvatar').textContent = userName.charAt(0).toUpperCase();
+    }
+}
+
+function updateUIForLoggedOutUser() {
+    authButtons.style.display = 'flex';
+    userProfile.style.display = 'none';
+}
+
+// Auth Functions
+async function handleLogin(email, password) {
+    try {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+        if (error) throw error;
+
+        return { success: true, data };
+    } catch (error) {
+        console.error('Login Fehler:', error);
+
+        let userMessage = 'Anmeldung fehlgeschlagen.';
+
+        if (error?.code === 'user_banned') {
+            userMessage = 'Dein Konto wurde gesperrt. Bitte kontaktiere den Support.';
+        } else if (error?.code === 'invalid_login_credentials' || error?.message === 'Invalid login credentials') {
+            userMessage = 'E-Mail oder Passwort ist ungültig.';
+        } else {
+            userMessage = 'Ein unerwarteter Fehler ist mehrmals aufgetreten';
+        }
+
+        return { success: false, error: userMessage };
+    }
+    try {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+        if (error) throw error;
+        
+        return { success: true, data };
+    } catch (error) {
+        console.error('Login Fehler:', error);
+        return { success: false, error: error.message };
+    };
+}
+
+async function handleRegister(email, password, username) {
+    try {
+        const { data, error } = await supabaseClient.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                data: {
+                    username: username
+                }
+            }
+        });
+
+        if (error) throw error;
+
+        return { success: true, data };
+    } catch (error) {
+        console.error('Registrierung Fehler:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+async function handleLogout() {
+    try {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) throw error;
+        return { success: true };
+    } catch (error) {
+        console.error('Logout Fehler:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// Form Event Handlers
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const submitBtn = document.getElementById('loginSubmit');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Anmelden...';
+    
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    
+    if (!email || !password) {
+        showNotification('Bitte alle Felder ausfüllen', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Anmelden';
+        return;
+    }
+    
+    const result = await handleLogin(email, password);
+    
+    if (result.success) {
+        hideLoginForm();
+        document.getElementById('loginForm').reset();
+        showNotification('Willkommen zurück!', 'success');
+    } else {
+        showNotification(result.error, 'error');
+    }
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Anmelden';
+});
+
+
+function hideAllForms() {
+    hideLoginForm();
+    hideRegisterForm();
+    hideContactForm();
+}
+
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const submitBtn = document.getElementById('registerSubmit');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Registrieren...';
+
+    const username = document.getElementById('registerUsername').value.trim();
+    const email = document.getElementById('registerEmail').value.trim();
+    const password = document.getElementById('registerPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    if (!username || !email || !password || !confirmPassword) {
+        showNotification('Bitte alle Felder ausfüllen', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Registrieren';
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        showNotification('Passwörter stimmen nicht überein', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Registrieren';
+        return;
+    }
+
+    const result = await handleRegister(email, password, username);
+
+    if (result.success) {
+        hideRegisterForm();
+        document.getElementById('registerForm').reset();
+        showNotification('Registrierung erfolgreich! Bitte E-Mail bestätigen.', 'success');
+    } else {
+        showNotification(result.error, 'error');
+    }
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Registrieren';
+});
+
+
+function logout() {
+    handleLogout().then(() => {
+        sessionStorage.clear();
+        localStorage.clear();
+        showNotification("Abgemeldet", "success");
+    });
+}
+
+
+
+function toggleTheme() {
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    updateThemeToggleButton();
+}
+
+function updateThemeToggleButton() {
+    const btn = document.getElementById('themeToggle');
+    if (btn) {
+        btn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    updateThemeToggleButton();
+});
+</script>
+<script>
+document.getElementById('userProfile').addEventListener('click', function (e) {
+    const dropdown = document.getElementById('userDropdown');
+    const isVisible = dropdown.style.display === 'block';
+    dropdown.style.display = isVisible ? 'none' : 'block';
+    e.stopPropagation();
+});
+
+document.addEventListener('click', function () {
+    const dropdown = document.getElementById('userDropdown');
+    if (dropdown) dropdown.style.display = 'none';
+});
+</script>
+<!-- Erweiterung für Profil-System: Profilbild, E-Mail, Statusanzeige + Systemstatus Button -->
+<!-- Innerhalb des Edit Profile Forms (editProfileOverlay) -->
+<div class="form-overlay" id="editProfileOverlay" style="display: none;">
+<div class="form-container">
+<button class="form-close" onclick="hideEditProfileForm()">×</button>
+<h2 class="form-title">Profil bearbeiten</h2>
+<form id="editProfileForm">
+<div class="form-group">
+<label class="form-label" for="editUsername">Benutzername</label>
+<input class="form-input" id="editUsername" required="" type="text"/>
+</div>
+<div class="form-group">
+<label class="form-label" for="editEmail">E-Mail</label>
+<input class="form-input" id="editEmail" required="" type="email"/>
+</div>
+<button class="form-submit" type="submit">Profil Speichern</button>
+</form>
+</div>
+</div>
+<!-- Avatar-Bild im Profil anzeigen -->
+<div class="user-profile" id="userProfile" style="display: none;">
+<button id="activityButton" title="Aktivitätsübersicht" style="background: transparent; border: none; font-size: 20px; cursor: pointer;">📊</button>
+
+<div class="user-avatar" id="userAvatar">U</div>
+<span id="userName">User</span>
+<div class="user-dropdown" id="userDropdown" style="display: none;">
+<div class="dropdown-item" onclick="showEditProfileForm()">Profil bearbeiten</div>
+<div class="dropdown-item" onclick="logout()">Logout</div>
+</div>
+</div>
+<button id="themeToggle" onclick="toggleTheme()" title="Darkmode umschalten">🌙</button>
+<a href="https://roxyboy179.github.io/ehecommunity_helpcenter/" id="helpCenterButton" target="_blank" title="Zum Helpcenter">❓</a>
+<!-- Systemstatus Button unten rechts -->
+<a href="https://roxyboy179.github.io/ehecommunity_systemstatus/" id="statusButton" style="position: fixed; bottom: 90px; left: 20px; background: var(--bg-primary); color: var(--text-primary); border: 2px solid var(--border-color); border-radius: 50%; width: 50px; height: 50px; font-size: 22px; font-weight: bold; box-shadow: var(--shadow); text-align: center; line-height: 46px; text-decoration: none; cursor: pointer; transition: all 0.3s ease; z-index: 5000;" target="_blank" title="Systemstatus anzeigen">
+  🖥️
+</a>
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>
+function toggleTheme() {
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    updateThemeToggleButton();
+}
+
+function setTheme(theme) {
+    currentTheme = theme;
+    document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'dark' : '');
+    localStorage.setItem('theme', theme);
+    sessionStorage.setItem('theme', theme);
+    document.body.classList.add("theme-transition");
+    window.setTimeout(() => document.body.classList.remove("theme-transition"), 500);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(savedTheme);
+    updateThemeToggleButton();
+});
+</script><script>
+document.getElementById('hamburger').addEventListener('click', function () {
+  const nav = document.getElementById('mobileNav');
+  nav.style.display = nav.style.display === 'flex' ? 'none' : 'flex';
+});
+</script><script>
+  AOS.init({ duration: 800, once: true });
+</script>
+<script>
+function showEditProfileForm() {
+  const username = currentUser.user_metadata?.username || "";
+  const email = currentUser.email || "";
+  const createdAt = currentUser.created_at;
+  document.getElementById('editUsername').value = username;
+  document.getElementById('editEmail').value = email;
+
+  const sinceDate = new Date(createdAt);
+  const options = { year: 'numeric', month: 'long' };
+  const formatted = sinceDate.toLocaleDateString('de-DE', options);
+  let seitDiv = document.getElementById('mitgliedSeit');
+  if (!seitDiv) {
+    seitDiv = document.createElement('div');
+    seitDiv.id = 'mitgliedSeit';
+    seitDiv.style.marginTop = '20px';
+    seitDiv.style.color = 'var(--text-secondary)';
+    document.getElementById('editProfileForm').appendChild(seitDiv);
+  }
+  seitDiv.innerText = 'Mitglied seit: ' + formatted;
+
+  document.getElementById('editProfileOverlay').style.display = 'flex';
+}
+
+function hideEditProfileForm() {
+  document.getElementById('editProfileOverlay').style.display = 'none';
+}
+</script>
+
+<!-- Aktivitätsübersicht Overlay -->
+<div class="form-overlay" id="activityOverlay" style="display: none;">
+  <div class="form-container">
+    <button class="form-close" onclick="document.getElementById('activityOverlay').style.display='none'">×</button>
+    <h2 class="form-title">📈 Aktivitätsübersicht</h2>
+    <div id="datetimeDisplay" style="text-align:center; font-weight:bold; margin-bottom: 20px;"></div>
+    <div style="text-align: center; margin-top: 10px;">Hmm, da ist offensichtlich ein Fehler passiert?</div>
+  </div>
+</div>
+
+<script>
+document.getElementById('activityButton').addEventListener('click', function () {
+  document.getElementById('activityOverlay').style.display = 'flex';
+});
+
+</script>
+
+</body></html>
