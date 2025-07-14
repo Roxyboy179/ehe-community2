@@ -1451,8 +1451,8 @@ document.getElementById('activityButton').addEventListener('click', function () 
 <div class="welcome-overlay" id="passwordChangedOverlay" style="display: none;">
 <div class="welcome-box">
 <button class="welcome-close" onclick="closePasswordChangedPopup()">×</button>
-<h2>Hallo Nutzer/in,</h2>
-<p>Ihr Passwort wurde aktualisiert. Sie können sich nun mit dem neuen Passwort anmelden. Und ist in wenigen Sekunden einsatzbereit.</p>
+<h2>Hallo Nutzer,</h2>
+<p>Sie haben Ihr Passwort vor Kurzem aktualisiert und müssen es noch per E-Mail bestätigen.</p>
 <button class="btn btn-primary" onclick="closePasswordChangedPopup()">Verstanden</button>
 </div>
 </div>
@@ -1487,4 +1487,187 @@ document.getElementById('changePasswordForm')?.addEventListener('submit', async 
   }
 });
 </script>
-</body></html>
+
+<!-- ERGÄNZUNGEN FÜR ANMELDETIPP UND COMING UPDATE POPUPS -->
+<script>
+// Check ob der Benutzer eingeloggt ist
+function isUserLoggedIn() {
+  return currentUser !== null;
+}
+
+// Anmelde-Tipp Popup alle 2 Minuten
+setInterval(() => {
+  if (!isUserLoggedIn()) {
+    showLoginReminder();
+  }
+}, 2 * 60 * 1000);
+
+function showLoginReminder() {
+  const overlay = document.createElement('div');
+  overlay.className = 'welcome-overlay';
+  overlay.innerHTML = `
+    <div class="welcome-box">
+      <button class="welcome-close" onclick="this.parentElement.parentElement.remove()">×</button>
+      <h2>🔐 Noch nicht angemeldet?</h2>
+      <p>Melde dich an, um alle Funktionen der EHE Community zu nutzen!</p>
+      <button class="btn btn-primary" onclick="showLoginForm(); this.closest('.welcome-overlay').remove();">Jetzt anmelden</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+// Coming Update Popup alle 3 Minuten
+setInterval(() => {
+  showComingUpdatePopup();
+}, 3 * 60 * 1000);
+
+function showComingUpdatePopup() {
+  const overlay = document.createElement('div');
+  overlay.className = 'welcome-overlay';
+  overlay.innerHTML = `
+    <div class="welcome-box">
+      <button class="welcome-close" onclick="this.parentElement.parentElement.remove()">×</button>
+      <h2>🛠️ Neues Update bald!</h2>
+      <p>
+        <strong>Beta Teste</strong> – Teste unsere Webseite als Beta Tester<br/>
+        ✅ Beta Tester Badge<br/>
+        ✅ Beta Funktionen<br/><br/>
+        🔍 Mehr Informationen für unsere Startseite und coole Dienste.<br/>
+        <strong>Update Status:</strong> Kein Datum vorhanden.
+      </p>
+      <button class="btn btn-primary" onclick="this.closest('.welcome-overlay').remove()">Verstanden</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+</script>
+
+<!-- SUBMIT-HANDLER FÜR PROFIL SPEICHERN -->
+<script>
+document.getElementById('editProfileForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const username = document.getElementById('editUsername').value.trim();
+  const email = document.getElementById('editEmail').value.trim();
+
+  if (!username || !email) {
+    showNotification('Bitte alle Felder ausfüllen', 'error');
+    return;
+  }
+
+  try {
+    const { data, error } = await supabaseClient.auth.updateUser({
+      email,
+      data: { username }
+    });
+
+    if (error) {
+      console.error(error);
+      showNotification('Fehler beim Aktualisieren des Profils', 'error');
+      return;
+    }
+
+    hideEditProfileForm();
+    showNotification('Profil erfolgreich aktualisiert!', 'success');
+  } catch (err) {
+    console.error(err);
+    showNotification('Unerwarteter Fehler beim Speichern', 'error');
+  }
+});
+</script>
+
+<style>
+/* Optional: Stil-Anpassungen für Popups */
+.welcome-box h2 {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+.welcome-box p {
+  font-size: 16px;
+  line-height: 1.5;
+}
+</style>
+
+<script>
+// Direkt nach Willkommens-Overlay zeigen wir die Reminder automatisch
+document.addEventListener('DOMContentLoaded', async () => {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  currentUser = session?.user || null;
+
+  const welcomeOverlay = document.getElementById('welcomeOverlay');
+  const observer = new MutationObserver((mutations, obs) => {
+    if (welcomeOverlay && welcomeOverlay.style.display === 'none') {
+      showLoginReminder(); // direkt danach Login Reminder
+      setTimeout(() => showComingUpdatePopup(), 10000); // 10s später Update Popup
+      startPopupIntervals();
+      obs.disconnect();
+    }
+  });
+
+  if (welcomeOverlay) {
+    observer.observe(welcomeOverlay, { attributes: true, attributeFilter: ['style'] });
+  } else {
+    // falls kein Willkommens-Popup angezeigt wird (z. B. bei eingeloggten Nutzern)
+    showLoginReminder();
+    setTimeout(() => showComingUpdatePopup(), 10000);
+    startPopupIntervals();
+  }
+});
+
+function startPopupIntervals() {
+  setInterval(() => {
+    if (!currentUser) showLoginReminder();
+  }, 2 * 60 * 1000); // alle 2 Minuten
+
+  setInterval(() => {
+    showComingUpdatePopup();
+  }, 3 * 60 * 1000); // alle 3 Minuten
+}
+
+function showLoginReminder() {
+  const overlay = document.createElement('div');
+  overlay.className = 'welcome-overlay';
+  overlay.innerHTML = `
+    <div class="welcome-box">
+      <button class="welcome-close" onclick="this.parentElement.parentElement.remove()">×</button>
+      <h2>🔐 Noch nicht angemeldet?</h2>
+      <p>Melde dich an, um alle Funktionen der EHE Community zu nutzen!</p>
+      <button class="btn btn-primary" onclick="showLoginForm(); this.closest('.welcome-overlay').remove();">Jetzt anmelden</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function showComingUpdatePopup() {
+  const overlay = document.createElement('div');
+  overlay.className = 'welcome-overlay';
+  overlay.innerHTML = `
+    <div class="welcome-box">
+      <button class="welcome-close" onclick="this.parentElement.parentElement.remove()">×</button>
+      <h2>🛠️ Neues Update bald!</h2>
+      <p>
+        <strong>Beta Teste</strong> – Teste unsere Webseite als Beta Tester<br/>
+        ✅ Beta Tester Badge<br/>
+        ✅ Beta Funktionen<br/><br/>
+        🔍 Mehr Informationen für unsere Startseite und coole Dienste.<br/>
+        <strong>Update Status:</strong> Kein Datum vorhanden.
+      </p>
+      <button class="btn btn-primary" onclick="this.closest('.welcome-overlay').remove()">Verstanden</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+</script>
+
+<style>
+.welcome-box h2 {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+.welcome-box p {
+  font-size: 16px;
+  line-height: 1.5;
+}
+</style>
+</style>
+</body>
