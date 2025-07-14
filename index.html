@@ -5,8 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>EHE Community Web - Beta</title>
-<link rel="icon" type="image/png" href="favicon.png" />
-
+<link href="favicon.png" rel="icon" type="image/png"/>
 <style>
         * {
             margin: 0;
@@ -750,11 +749,10 @@
 <button class="btn btn-primary" onclick="showRegisterForm()">Registrieren</button>
 </div>
 <div class="user-profile" id="userProfile" style="display: none;">
-<button id="activityButton" title="Aktivitätsübersicht" style="background: transparent; border: none; font-size: 20px; cursor: pointer;">📊</button>
-
+<button id="activityButton" style="background: transparent; border: none; font-size: 20px; cursor: pointer;" title="Aktivitätsübersicht">📊</button>
 <div class="user-avatar" id="userAvatar" style="display: flex;">U</div>
 <span id="userName">User</span>
-<div class="user-dropdown" id="userDropdown" style="display: none;"><div class="dropdown-item" onclick="showEditProfileForm()">Profil bearbeiten</div><div class="dropdown-item" onclick="logout()">Logout</div></div></div>
+<div class="user-dropdown" id="userDropdown" style="display: none;"><div class="dropdown-item" onclick="showChangePasswordForm()">Passwort ändern</div><div class="dropdown-item" onclick="showEditProfileForm()">Profil bearbeiten</div><div class="dropdown-item" onclick="logout()">Logout</div></div></div>
 <div class="hamburger" id="hamburger">☰</div>
 <div class="mobile-nav" id="mobileNav">
 <a class="nav-link" href="#">Home</a>
@@ -793,8 +791,18 @@
 <button class="btn btn-primary" onclick="showContactForm()">Kontaktformular</button>
 </div>
 </div>
-
 </main>
+<script>
+function showVerifyEmailOverlay(username, email) {
+  document.getElementById('verifyUserName').textContent = username;
+  document.getElementById('verifyEmailTarget').textContent = email;
+  document.getElementById('verifyEmailOverlay').style.display = 'flex';
+}
+
+function closeVerifyEmail() {
+  document.getElementById('verifyEmailOverlay').style.display = 'none';
+}
+</script>
 <!-- Login Form -->
 <div class="form-overlay" id="loginOverlay">
 <div class="form-container">
@@ -1245,6 +1253,8 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
         hideRegisterForm();
         document.getElementById('registerForm').reset();
         showNotification('Registrierung erfolgreich! Bitte E-Mail bestätigen.', 'success');
+        const domain = email.split('@')[1] || 'unbekannt';
+        showVerifyEmailOverlay(username, email);
     } else {
         showNotification(result.error, 'error');
     }
@@ -1315,8 +1325,7 @@ document.addEventListener('click', function () {
 </div>
 <!-- Avatar-Bild im Profil anzeigen -->
 <div class="user-profile" id="userProfile" style="display: none;">
-<button id="activityButton" title="Aktivitätsübersicht" style="background: transparent; border: none; font-size: 20px; cursor: pointer;">📊</button>
-
+<button id="activityButton" style="background: transparent; border: none; font-size: 20px; cursor: pointer;" title="Aktivitätsübersicht">📊</button>
 <div class="user-avatar" id="userAvatar">U</div>
 <span id="userName">User</span>
 <div class="user-dropdown" id="userDropdown" style="display: none;">
@@ -1369,8 +1378,15 @@ function showEditProfileForm() {
   document.getElementById('editEmail').value = email;
 
   const sinceDate = new Date(createdAt);
-  const options = { year: 'numeric', month: 'long' };
-  const formatted = sinceDate.toLocaleDateString('de-DE', options);
+  const options = {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  };
+  const formatted = sinceDate.toLocaleString('de-DE', options);
   let seitDiv = document.getElementById('mitgliedSeit');
   if (!seitDiv) {
     seitDiv = document.createElement('div');
@@ -1388,22 +1404,87 @@ function hideEditProfileForm() {
   document.getElementById('editProfileOverlay').style.display = 'none';
 }
 </script>
-
 <!-- Aktivitätsübersicht Overlay -->
 <div class="form-overlay" id="activityOverlay" style="display: none;">
-  <div class="form-container">
-    <button class="form-close" onclick="document.getElementById('activityOverlay').style.display='none'">×</button>
-    <h2 class="form-title">📈 Aktivitätsübersicht</h2>
-    <div id="datetimeDisplay" style="text-align:center; font-weight:bold; margin-bottom: 20px;"></div>
-    <div style="text-align: center; margin-top: 10px;">Hmm, da ist offensichtlich ein Fehler passiert?</div>
-  </div>
+<div class="form-container">
+<button class="form-close" onclick="document.getElementById('activityOverlay').style.display='none'">×</button>
+<h2 class="form-title">📈 Aktivitätsübersicht</h2>
+<div id="datetimeDisplay" style="text-align:center; font-weight:bold; margin-bottom: 20px;"></div>
+<div style="text-align: center; margin-top: 10px;">Hmm, da ist offensichtlich ein Fehler passiert?</div>
 </div>
-
+</div>
 <script>
 document.getElementById('activityButton').addEventListener('click', function () {
   document.getElementById('activityOverlay').style.display = 'flex';
 });
 
 </script>
+<div class="welcome-overlay" id="verifyEmailOverlay" style="display: none;">
+<div class="welcome-box">
+<button class="welcome-close" onclick="closeVerifyEmail()">×</button>
+<h2>📧 Hallo <span id="verifyUserName"></span>,</h2>
+<p>Haben Sie schon Ihre E-Mail-Adresse verifiziert?<br/>
+    Wir haben eine Nachricht an <strong id="verifyEmailTarget"></strong> gesendet.</p>
+<button class="btn btn-primary" onclick="closeVerifyEmail()">Verstanden</button>
+</div>
+</div>
 
+<!-- Passwort ändern Formular -->
+<div class="form-overlay" id="changePasswordOverlay" style="display: none;">
+<div class="form-container">
+<button class="form-close" onclick="hideChangePasswordForm()">×</button>
+<h2 class="form-title">Passwort ändern</h2>
+<form id="changePasswordForm">
+<div class="form-group">
+<label class="form-label" for="newPassword">Neues Passwort</label>
+<input class="form-input" id="newPassword" required="" type="password"/>
+</div>
+<div class="form-group">
+<label class="form-label" for="confirmNewPassword">Neues Passwort bestätigen</label>
+<input class="form-input" id="confirmNewPassword" required="" type="password"/>
+</div>
+<button class="form-submit" type="submit">Passwort ändern</button>
+</form>
+</div>
+</div>
+<!-- Hinweis-Popup nach Passwortänderung -->
+<div class="welcome-overlay" id="passwordChangedOverlay" style="display: none;">
+<div class="welcome-box">
+<button class="welcome-close" onclick="closePasswordChangedPopup()">×</button>
+<h2>Hallo Nutzer,</h2>
+<p>Sie haben Ihr Passwort vor Kurzem aktualisiert und müssen es noch per E-Mail bestätigen.</p>
+<button class="btn btn-primary" onclick="closePasswordChangedPopup()">Verstanden</button>
+</div>
+</div>
+<script>
+function showChangePasswordForm() {
+  document.getElementById('changePasswordOverlay').style.display = 'flex';
+}
+function hideChangePasswordForm() {
+  document.getElementById('changePasswordOverlay').style.display = 'none';
+}
+function showVerifyPasswordChangedPopup() {
+  document.getElementById('passwordChangedOverlay').style.display = 'flex';
+}
+function closePasswordChangedPopup() {
+  document.getElementById('passwordChangedOverlay').style.display = 'none';
+}
+document.getElementById('changePasswordForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const newPassword = document.getElementById('newPassword').value;
+  const confirmPassword = document.getElementById('confirmNewPassword').value;
+  if (newPassword !== confirmPassword) {
+    showNotification("Passwörter stimmen nicht überein", "error");
+    return;
+  }
+  const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
+  if (error) {
+    showNotification("Fehler beim Ändern des Passworts", "error");
+    console.error(error);
+  } else {
+    hideChangePasswordForm();
+    showVerifyPasswordChangedPopup();
+  }
+});
+</script>
 </body></html>
