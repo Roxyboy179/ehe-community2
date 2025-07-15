@@ -1503,6 +1503,7 @@ setInterval(() => {
 }, 2 * 60 * 1000);
 
 function showLoginReminder() {
+  if (sessionStorage.getItem('loginReminderClosed')) return;
   const overlay = document.createElement('div');
   overlay.className = 'welcome-overlay';
   overlay.innerHTML = `
@@ -1510,7 +1511,7 @@ function showLoginReminder() {
       <button class="welcome-close" onclick="this.parentElement.parentElement.remove()">×</button>
       <h2>🔐 Noch nicht angemeldet?</h2>
       <p>Melde dich an, um alle Funktionen der EHE Community zu nutzen!</p>
-      <button class="btn btn-primary" onclick="showLoginForm(); this.closest('.welcome-overlay').remove();">Jetzt anmelden</button>
+      <button class="btn btn-primary" onclick="showLoginForm(); closeLoginReminder(this);">Jetzt anmelden</button>
     </div>
   `;
   document.body.appendChild(overlay);
@@ -1522,6 +1523,7 @@ setInterval(() => {
 }, 3 * 60 * 1000);
 
 function showComingUpdatePopup() {
+  if (sessionStorage.getItem('updatePopupClosed')) return;
   const overlay = document.createElement('div');
   overlay.className = 'welcome-overlay';
   overlay.innerHTML = `
@@ -1615,16 +1617,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function startPopupIntervals() {
-  setInterval(() => {
-    if (!currentUser) showLoginReminder();
-  }, 2 * 60 * 1000); // alle 2 Minuten
+  if (!sessionStorage.getItem('loginReminderClosed') && !currentUser) {
+    setTimeout(() => {
+      showLoginReminder();
+    }, 5000);
+  }
 
-  setInterval(() => {
-    showComingUpdatePopup();
-  }, 3 * 60 * 1000); // alle 3 Minuten
+  if (!sessionStorage.getItem('updatePopupClosed')) {
+    setTimeout(() => {
+      showComingUpdatePopup();
+    }, 10000);
+  }
 }
 
 function showLoginReminder() {
+  if (sessionStorage.getItem('loginReminderClosed')) return;
   const overlay = document.createElement('div');
   overlay.className = 'welcome-overlay';
   overlay.innerHTML = `
@@ -1632,13 +1639,14 @@ function showLoginReminder() {
       <button class="welcome-close" onclick="this.parentElement.parentElement.remove()">×</button>
       <h2>🔐 Noch nicht angemeldet?</h2>
       <p>Melde dich an, um alle Funktionen der EHE Community zu nutzen!</p>
-      <button class="btn btn-primary" onclick="showLoginForm(); this.closest('.welcome-overlay').remove();">Jetzt anmelden</button>
+      <button class="btn btn-primary" onclick="showLoginForm(); closeLoginReminder(this);">Jetzt anmelden</button>
     </div>
   `;
   document.body.appendChild(overlay);
 }
 
 function showComingUpdatePopup() {
+  if (sessionStorage.getItem('updatePopupClosed')) return;
   const overlay = document.createElement('div');
   overlay.className = 'welcome-overlay';
   overlay.innerHTML = `
@@ -1670,4 +1678,73 @@ function showComingUpdatePopup() {
 }
 </style>
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  currentUser = session?.user || null;
+  startPopupIntervals();
+});
+
+function showLoginReminder() {
+  if (sessionStorage.getItem('loginReminderClosed')) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'welcome-overlay';
+  overlay.innerHTML = `
+    <div class="welcome-box">
+      <button class="welcome-close" onclick="closeLoginReminder(this)">×</button>
+      <h2>🔐 Noch nicht angemeldet?</h2>
+      <p>Melde dich an, um alle Funktionen der EHE Community zu nutzen!</p>
+      <button class="btn btn-primary" onclick="showLoginForm(); closeLoginReminder(this)">Jetzt anmelden</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function showComingUpdatePopup() {
+  if (sessionStorage.getItem('updatePopupClosed')) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'welcome-overlay';
+  overlay.innerHTML = `
+    <div class="welcome-box">
+      <button class="welcome-close" onclick="closeUpdatePopup(this)">×</button>
+      <h2>🛠️ Neues Update bald!</h2>
+      <p>
+        <strong>Beta Teste</strong> – Teste unsere Webseite als Beta Tester<br/>
+        ✅ Beta Tester Badge<br/>
+        ✅ Beta Funktionen<br/><br/>
+        🔍 Mehr Informationen für unsere Startseite und coole Dienste.<br/>
+        <strong>Update Status:</strong> Kein Datum vorhanden.
+      </p>
+      <button class="btn btn-primary" onclick="closeUpdatePopup(this)">Verstanden</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function closeLoginReminder(button) {
+  const popup = button.closest('.welcome-overlay');
+  popup.remove();
+  sessionStorage.setItem('loginReminderClosed', 'true');
+}
+
+function closeUpdatePopup(button) {
+  const popup = button.closest('.welcome-overlay');
+  popup.remove();
+  sessionStorage.setItem('updatePopupClosed', 'true');
+}
+</script>
+
 </body>
+<script>
+function closeLoginReminder(button) {
+  const popup = button.closest('.welcome-overlay');
+  popup.remove();
+  sessionStorage.setItem('loginReminderClosed', 'true');
+}
+function closeUpdatePopup(button) {
+  const popup = button.closest('.welcome-overlay');
+  popup.remove();
+  sessionStorage.setItem('updatePopupClosed', 'true');
+}
+</script>
