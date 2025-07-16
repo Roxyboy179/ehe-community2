@@ -713,6 +713,30 @@
     display: block;
   }
 }
+
+/* Discord-ähnlicher Verwarnungspopup */
+#warningOverlay .welcome-box {
+  max-width: 420px;
+  background: var(--bg-primary);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+  color: var(--text-primary);
+  text-align: left;
+}
+
+#warningOverlay .welcome-box h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: var(--error-color);
+}
+
+#warningOverlay .welcome-box p,
+#warningOverlay .welcome-box small {
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
 </style>
 <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet"/>
 </head>
@@ -752,7 +776,8 @@
 <button id="activityButton" style="background: transparent; border: none; font-size: 20px; cursor: pointer;" title="Aktivitätsübersicht">📊</button>
 <div class="user-avatar" id="userAvatar" style="display: flex;">U</div>
 <span id="userName">User</span>
-<div class="user-dropdown" id="userDropdown" style="display: none;"><div class="dropdown-item" onclick="showChangePasswordForm()">Passwort ändern</div><div class="dropdown-item" onclick="showEditProfileForm()">Profil bearbeiten</div><div class="dropdown-item" onclick="logout()">Logout</div></div></div>
+<div class="user-dropdown" id="userDropdown" style="display: none;"><div class="dropdown-item" onclick="showChangePasswordForm()">Passwort ändern</div><div class="dropdown-item" onclick="showEditProfileForm()">Profil bearbeiten</div>
+<div class="dropdown-item" onclick="showWarnings()">⚠️ Verwarnungen</div><div class="dropdown-item" onclick="logout()">Logout</div></div></div>
 <div class="hamburger" id="hamburger">☰</div>
 <div class="mobile-nav" id="mobileNav">
 <a class="nav-link" href="#">Home</a>
@@ -1330,6 +1355,7 @@ document.addEventListener('click', function () {
 <span id="userName">User</span>
 <div class="user-dropdown" id="userDropdown" style="display: none;">
 <div class="dropdown-item" onclick="showEditProfileForm()">Profil bearbeiten</div>
+<div class="dropdown-item" onclick="showWarnings()">⚠️ Verwarnungen</div>
 <div class="dropdown-item" onclick="logout()">Logout</div>
 </div>
 </div>
@@ -1588,6 +1614,30 @@ document.getElementById('editProfileForm').addEventListener('submit', async (e) 
   font-size: 16px;
   line-height: 1.5;
 }
+
+/* Discord-ähnlicher Verwarnungspopup */
+#warningOverlay .welcome-box {
+  max-width: 420px;
+  background: var(--bg-primary);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+  color: var(--text-primary);
+  text-align: left;
+}
+
+#warningOverlay .welcome-box h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: var(--error-color);
+}
+
+#warningOverlay .welcome-box p,
+#warningOverlay .welcome-box small {
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
 </style>
 
 <script>
@@ -1676,7 +1726,55 @@ function showComingUpdatePopup() {
   font-size: 16px;
   line-height: 1.5;
 }
+
+/* Discord-ähnlicher Verwarnungspopup */
+#warningOverlay .welcome-box {
+  max-width: 420px;
+  background: var(--bg-primary);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+  color: var(--text-primary);
+  text-align: left;
+}
+
+#warningOverlay .welcome-box h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: var(--error-color);
+}
+
+#warningOverlay .welcome-box p,
+#warningOverlay .welcome-box small {
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
 </style>
+
+/* Discord-ähnlicher Verwarnungspopup */
+#warningOverlay .welcome-box {
+  max-width: 420px;
+  background: var(--bg-primary);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+  color: var(--text-primary);
+  text-align: left;
+}
+
+#warningOverlay .welcome-box h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: var(--error-color);
+}
+
+#warningOverlay .welcome-box p,
+#warningOverlay .welcome-box small {
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
 </style>
 
 <script>
@@ -1732,6 +1830,118 @@ function closeUpdatePopup(button) {
   const popup = button.closest('.welcome-overlay');
   popup.remove();
   sessionStorage.setItem('updatePopupClosed', 'true');
+}
+</script>
+
+
+<!-- Verwarnung Popup -->
+<div class="welcome-overlay" id="warningOverlay" style="display: none;">
+  <div class="welcome-box">
+    <button class="welcome-close" onclick="closeWarningPopup()">×</button>
+    <h2>⚠️ Verwarnung</h2>
+    <p id="warningReason">Grund wird geladen...</p>
+    <small id="warningMeta">Ausgestellt von ...</small>
+    <br><br>
+    <button class="btn btn-primary" onclick="closeWarningPopup()">Verstanden</button>
+  </div>
+</div>
+
+
+<script>
+// Verwarnung anzeigen
+async function checkUserWarnings(userId) {
+  const { data, error } = await supabaseClient
+    .from('warnings')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error("Fehler beim Abrufen der Verwarnungen:", error);
+    return;
+  }
+
+  if (data.length > 0) {
+    const lastWarning = data[0];
+    showWarningPopup(lastWarning.reason, lastWarning.issued_by, lastWarning.created_at, lastWarning.fall_id);
+  }
+}
+
+function showWarningPopup(reason, issuedBy, date, fallId) {
+  document.getElementById("warningReason").textContent = `Grund: ${reason}`;
+  let meta = `Ausgestellt von ${issuedBy} am ${new Date(date).toLocaleString('de-DE')}`;
+  if (fallId) {
+    meta += ` | Fall-ID: ${fallId}`;
+  }
+  document.getElementById("warningMeta").textContent = meta;
+  document.getElementById("warningOverlay").style.display = "flex";
+};
+  document.getElementById("warningMeta").textContent = `Ausgestellt von ${issuedBy} am ${new Date(date).toLocaleString('de-DE')}`;
+  document.getElementById("warningOverlay").style.display = "flex";
+
+function closeWarningPopup() {
+  document.getElementById("warningOverlay").style.display = "none";
+}
+
+// Erweiterung bestehender Login-UI-Funktion
+const originalUpdateUI = updateUIForLoggedInUser;
+updateUIForLoggedInUser = function () {
+  originalUpdateUI();
+  if (currentUser) {
+    if (!sessionStorage.getItem("warningShown")) {
+  checkUserWarnings(currentUser.id).then(() => {
+    sessionStorage.setItem("warningShown", "true");
+  });
+}
+  }
+};
+</script>
+
+
+<!-- Verwarnungen-Overlay -->
+<div class="form-overlay" id="warningsOverlay" style="display: none;">
+  <div class="form-container">
+    <button class="form-close" onclick="document.getElementById('warningsOverlay').style.display='none'">×</button>
+    <h2 class="form-title">⚠️ Deine Verwarnungen</h2>
+    <div id="warningsList" style="margin-top: 20px;">
+      <p>Lade Verwarnungen...</p>
+    </div>
+  </div>
+</div>
+
+
+<script>
+async function showWarnings() {
+  document.getElementById("warningsOverlay").style.display = "flex";
+  const list = document.getElementById("warningsList");
+  list.innerHTML = "<p>Lade Verwarnungen...</p>";
+
+  const { data, error } = await supabaseClient
+    .from('warnings')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    list.innerHTML = `<p style="color: var(--error-color)">Fehler beim Laden: ${error.message}</p>`;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    list.innerHTML = "<p>Du hast aktuell keine Verwarnungen 🎉</p>";
+    return;
+  }
+
+  
+list.innerHTML = data.map(warn => `
+  <div style="border-bottom: 1px solid var(--border-color); padding: 10px 0;">
+    <strong>Grund:</strong> ${warn.reason}<br/>
+    <strong>Ausgestellt von:</strong> ${warn.issued_by}<br/>
+    <strong>Fall-ID:</strong> ${warn.fall_id || 'Nicht vorhanden'}<br/>
+    <small>${new Date(warn.created_at).toLocaleString('de-DE')}</small>
+  </div>
+`).join("");
+
 }
 </script>
 
