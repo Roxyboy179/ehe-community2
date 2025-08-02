@@ -1931,4 +1931,152 @@ function closeUpdatePopup(button) {
   popup.remove();
   sessionStorage.setItem('updatePopupClosed', 'true');
 }
+
+<script>
+const latestVersion = "v16.8";
+const versionKey = "ehe_web_version";
+const progressKey = "downloadProgress";
+
+// Fortschritt laden (falls vorhanden)
+let storedProgress = parseFloat(localStorage.getItem(progressKey)) || 0;
+let downloadAborted = false;
+
+// Beim Seitenbesuch
+if (localStorage.getItem(versionKey) !== latestVersion) {
+  showInitialUpdatePopup();
+} else if (localStorage.getItem("successNoticeShown") !== latestVersion) {
+  showSuccessPopup();
+  localStorage.setItem("successNoticeShown", latestVersion);
+}
+
+// ⬤ POPUP 1 – Start
+function showInitialUpdatePopup() {
+  const overlay = document.createElement("div");
+  overlay.className = "welcome-overlay";
+  overlay.id = "updateOverlay";
+  overlay.innerHTML = `
+    <div class="welcome-box animate-in" id="updateBox">
+      <h2>🌐 Webseite Update ${latestVersion}</h2>
+      <p>Bitte laden Sie sich diese neueste Version herunter, um die Vorteile der neuen Webseite zu nutzen.</p>
+      <button class="btn btn-primary" onclick="startDownloadSequence()">Software herunterladen</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+
+// ⬤ POPUP 2 – Download
+function startDownloadSequence() {
+  const box = document.getElementById("updateBox");
+  box.innerHTML = `
+    <h2>⬇️ Download läuft</h2>
+    <p>Wir laden die Webseite Software ${latestVersion} herunter.<br>
+       <strong>Bitte schließen Sie diesen Browser nicht.</strong></p>
+
+    <div id="progressBar" style="width:100%; height: 20px; background: #eee; border-radius: 10px; overflow: hidden; margin: 20px 0;">
+      <div id="progressInner" style="width:0%; height:100%; background: linear-gradient(90deg, var(--primary-color), var(--secondary-color)); transition: width 0.4s ease;"></div>
+    </div>
+    <div id="progressText" style="font-size: 14px; color: var(--text-secondary); margin-bottom: 10px;">...</div>
+    <div id="timeRemaining" style="font-size: 13px; color: var(--text-secondary); margin-bottom: 15px;">⏳ ...</div>
+    <button class="btn btn-danger" onclick="abortDownload()">❌ Abbrechen</button>
+  `;
+  simulateDownload();
+}
+
+// 🧮 Download-Logik
+function simulateDownload() {
+  const fileSizeMB = 950;
+  const downloadSpeedMBps = 7.28;
+  const intervalMs = 1000;
+  const incrementMB = downloadSpeedMBps * (intervalMs / 1000);
+
+  let downloadedMB = storedProgress;
+
+  const interval = setInterval(() => {
+    if (downloadAborted) {
+      clearInterval(interval);
+      localStorage.removeItem(progressKey);
+      document.getElementById("updateBox").innerHTML = `
+        <h2>🚫 Download abgebrochen</h2>
+        <p>Sie haben den Download der Version ${latestVersion} abgebrochen.</p>
+        <p>Laden sie Selbstständig die Webseite Neu.</p>
+      `;
+      return;
+    }
+
+    downloadedMB += incrementMB;
+    if (downloadedMB >= fileSizeMB) {
+      downloadedMB = fileSizeMB;
+      clearInterval(interval);
+      localStorage.setItem(versionKey, latestVersion);
+      localStorage.removeItem(progressKey);
+      showInstallPhase();
+      return;
+    }
+
+    localStorage.setItem(progressKey, downloadedMB); // Fortschritt speichern
+
+    const progress = (downloadedMB / fileSizeMB) * 100;
+    document.getElementById("progressInner").style.width = `${progress}%`;
+
+    const shown = downloadedMB >= 1000
+      ? `${(downloadedMB / 1000).toFixed(2)} GB`
+      : `${Math.floor(downloadedMB)} MB`;
+
+    document.getElementById("progressText").textContent =
+      `${Math.floor(progress)}% – ${shown} von ${(fileSizeMB / 1000).toFixed(1)} GB`;
+
+    const remainingMB = fileSizeMB - downloadedMB;
+    const remainingSec = remainingMB / downloadSpeedMBps;
+    const mins = Math.floor(remainingSec / 60);
+    const secs = Math.floor(remainingSec % 60);
+    document.getElementById("timeRemaining").textContent =
+      `⏳ Verbleibende Zeit: ${mins} Min ${secs < 10 ? "0" : ""}${secs} Sek`;
+  }, intervalMs);
+}
+
+// 🛑 Abbrechen
+function abortDownload() {
+  downloadAborted = true;
+}
+
+// ⬤ POPUP 3 – Installation
+function showInstallPhase() {
+  const box = document.getElementById("updateBox");
+  box.innerHTML = `
+    <h2>🔧 Update ${latestVersion} Software</h2>
+    <p>Anwendungen werden installiert...<br>
+    Webseiten-Neustart wird vorbereitet<br><br>
+    ⚠️ <strong>BITTE DIE SEITE NICHT NEULADEN!</strong></p>
+    <div id="installTime" style="margin-top: 15px; font-size: 15px; color: var(--text-secondary);">
+      ⏳ Verbleibend: 30 Sekunden
+    </div>
+  `;
+
+  let remaining = 30;
+  const timer = setInterval(() => {
+    remaining--;
+    document.getElementById("installTime").textContent =
+      `⏳ Verbleibend: ${remaining} ${remaining === 1 ? "Sekunde" : "Sekunden"}`;
+    if (remaining <= 0) {
+      clearInterval(timer);
+      location.reload();
+    }
+  }, 1000);
+}
+
+// ✅ POPUP – Erfolg bei erneutem Besuch
+function showSuccessPopup() {
+  const overlay = document.createElement("div");
+  overlay.className = "welcome-overlay";
+  overlay.innerHTML = `
+    <div class="welcome-box animate-in">
+      <button class="welcome-close" onclick="this.closest('.welcome-overlay').remove()">×</button>
+      <h2>✅ Version ${latestVersion} installiert</h2>
+      <p>Sie haben erfolgreich die Version ${latestVersion} der Webseite heruntergeladen und installiert. Viel Spaß!</p>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+}
+</script>
+
 </script>
