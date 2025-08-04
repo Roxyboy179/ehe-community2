@@ -4,6 +4,11 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+
+<meta name="author" content="EHE Community Webseite Studio">
+<meta name="description" content="Offizielle Beta-Plattform der EHE Community – entwickelt von EHE Community Webseite Studio.">
+<meta name="theme-color" content="#667eea">
+
 <title>EHE Community Web - Beta</title>
 <link href="favicon.png" rel="icon" type="image/png"/>
 <style>
@@ -572,6 +577,53 @@
             }
         }
     
+        .badge-scroll-box {
+  max-height: 60vh;
+  overflow-y: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 10px;
+  justify-content: center;
+}
+
+.badge {
+  background: linear-gradient(135deg, #edf2f7, #e2e8f0);
+  border-radius: 14px;
+  padding: 12px;
+  width: 140px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+.badge:hover {
+  transform: translateY(-4px);
+}
+.badge div {
+  margin: 3px 0;
+}
+.badge .badge-icon {
+  font-size: 24px;
+}
+.badge .badge-title {
+  font-weight: 700;
+  font-size: 14px;
+}
+.badge .badge-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Darkmode Support */
+[data-theme="dark"] .badge {
+  background: linear-gradient(135deg, #2d3748, #1a202c);
+  color: #f7fafc;
+}
+[data-theme="dark"] .badge .badge-desc {
+  color: #a0aec0;
+}
+
+
 [data-theme="dark"] .form-container {
     background: #2d3748;
     color: #f7fafc;
@@ -737,8 +789,79 @@
   color: var(--text-secondary);
 }
 
+
+/* Glänzender Effekt bei Hover für .btn-primary */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(120deg, rgba(255,255,255,0.2), rgba(255,255,255,0.6), rgba(255,255,255,0.2));
+  transform: skewX(-20deg);
+  transition: left 0.5s;
+}
+.btn-primary:hover::after {
+  left: 125%;
+}
+
+
+/* Feature-Karten mit weicher Transformation und Licht-Glow beim Hover */
+.feature-card {
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+.feature-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+}
+
+
+.feature-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+.feature-card:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 12px 30px rgba(102, 126, 234, 0.5);
+}
+
+.feature-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(120deg, rgba(255,255,255,0.15), rgba(255,255,255,0.4), rgba(255,255,255,0.15));
+  transform: skewX(-20deg);
+  transition: left 0.75s;
+}
+.feature-card:hover::after {
+  left: 125%;
+}
+
 </style>
 <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet"/>
+
+<style>
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+.blinking-warning {
+  animation: blink 1s infinite;
+  color: var(--error-color);
+  font-weight: bold;
+}
+</style>
+
 </head>
 <body>
 <canvas id="particlesCanvas"></canvas>
@@ -761,7 +884,7 @@
 </div>
 <header class="header">
 <div class="nav-container">
-<div class="logo">EHE Community Beta</div>
+<div class="logo" style="font-family: Poppins, sans-serif; font-size: 28px;"><span style="color: var(--primary-color)">EHE</span><span style="color: var(--secondary-color)"> Community Beta</span></div>
 <nav class="nav-links">
 <a class="nav-link" href="#">Home</a>
 <a class="nav-link" href="#">Community</a>
@@ -776,7 +899,17 @@
 <button id="activityButton" style="background: transparent; border: none; font-size: 20px; cursor: pointer;" title="Aktivitätsübersicht">📊</button>
 <div class="user-avatar" id="userAvatar" style="display: flex;">U</div>
 <span id="userName">User</span>
-<div class="user-dropdown" id="userDropdown" style="display: none;"><div class="dropdown-item" onclick="showChangePasswordForm()">Passwort ändern</div><div class="dropdown-item" onclick="showEditProfileForm()">Profil bearbeiten</div>
+<div style="font-size: 12px; color: var(--text-secondary);">
+  Level: <strong id="userLevel">1</strong> · XP: <strong id="userXP">0 / 100</strong><br>
+  🏅 Rang: <strong id="userBadge">🟢 Neuling</strong>
+</div>
+
+
+<div class="user-dropdown" id="userDropdown" style="display: none;"><div class="dropdown-item" onclick="showSecurityStatus()">🛡️ Sicherheitsstatus</div>
+<div class="dropdown-item" onclick="showXPLog()">📜 XP-Log anzeigen</div>
+<div class="dropdown-item" onclick="showBadgePopup()">🎖 Aktuelle Badges</div>
+
+<div class="dropdown-item" onclick="showChangePasswordFormWithPassword()">Passwort ändern</div><div class="dropdown-item" onclick="showEditProfileFormWithPassword()">Profil bearbeiten</div>
 <div class="dropdown-item" onclick="showWarnings()">⚠️ Verwarnungen</div><div class="dropdown-item" onclick="logout()">Logout</div></div></div>
 <div class="hamburger" id="hamburger">☰</div>
 <div class="mobile-nav" id="mobileNav">
@@ -791,32 +924,65 @@
 <section class="hero">
 <h1>Willkommen in der EHE Community</h1>
 <p>Gemeinsam stark, vernetzt und erfolgreich - Deine Community wartet auf dich!</p>
+<small style="display:block; margin-top:20px; font-style: italic;">Entwickelt von <strong>EHE Community Webseite Studio</strong></small>
 </section>
-<div class="content-section">
+<div class="content-section" id="features-start">
 <div class="features-grid">
-<div class="feature-card" data-aos="fade-up">
+<div class="feature-card" data-aos="fade-up" data-aos-delay="0" onclick="handleCommunityChat()" style="cursor: pointer;">
 <div class="feature-icon">💬</div>
 <h3>Community Chat</h3>
 <p>Trete unserem Discord bei und chatte mit anderen Community-Mitgliedern in Echtzeit.</p>
 </div>
-<div class="feature-card" data-aos="fade-up">
+<div class="feature-card" data-aos="fade-up" data-aos-delay="100" onclick="handleGamingEvents()" style="cursor: pointer;">
 <div class="feature-icon">🎮</div>
 <h3>Gaming Events</h3>
 <p>Nimm an regelmäßigen Gaming-Events teil und erlebe spannende Wettkämpfe.</p>
 </div>
-<div class="feature-card" data-aos="fade-up">
+<div class="feature-card" data-aos="fade-up" data-aos-delay="200" onclick="handleAchievements()" style="cursor: pointer;">
 <div class="feature-icon">🏆</div>
 <h3>Achievements</h3>
 <p>Sammle Achievements und zeige deine Erfolge der Community.</p>
 </div>
+<div class="feature-card" data-aos="fade-up" data-aos-delay="300" onclick="showUpdatesSequence()" style="cursor: pointer;">
+<div class="feature-icon">📰</div>
+<h3>Updates</h3>
+<p>Entdeckte die Neuen Updates mit einem Klick - Derzeit in Wartungsarbeiten</p>
 </div>
-<div class="contact-section">
+<div class="feature-card" data-aos="fade-up" data-aos-delay="400" onclick="showDiscordPopup()" style="cursor: pointer;">
+  <div class="feature-icon">👋</div>
+  <h3>Unser Discord</h3>
+  <p>Entdecke unsere Community auf Discord und verknüpfe dich direkt mit uns.</p>
+</div>
+<div class="feature-card" data-aos="fade-up" data-aos-delay="500" onclick="showFeedbackPopup()" style="cursor: pointer;">
+  <div class="feature-icon" onclick="showFeedbackForm()" style="cursor: pointer;">⭐</div>
+  <h3>Feedback an uns</h3>
+  <p>Hey Hast du bereits Erfahrung bei uns den Gebe uns gerne ein Feedback jede Positive Bewertung Hilfts uns Weiter.</p>
+</div>
+<div class="feature-card" data-aos="fade-up" data-aos-delay="600" onclick="showSupportzeitenPopup()" style="cursor: pointer;">
+  <div class="feature-icon" onclick="showSupportzeitenForm()" style="cursor: pointer;">⌚</div>
+  <h3>Unsere Supportzeiten</h3>
+  <p>Ihr Finden sie unsere aktuellen Supportzeiten sowie unsere Urlaubstage</p>
+</div>
+</div>
+<div class="contact-section" id="kontaktbereich">
 <h2>Kontakt</h2>
 <div class="contact-email">E-Mail: hamburgp20@gmail.com</div>
 <button class="btn btn-primary" onclick="showContactForm()">Kontaktformular</button>
 </div>
 </div>
 </main>
+
+<!-- XP-Log Overlay -->
+<div class="form-overlay" id="xpLogOverlay" style="display: none;">
+  <div class="form-container" style="max-height: 90vh; overflow-y: auto;">
+    <button class="form-close" onclick="document.getElementById('xpLogOverlay').style.display='none'">×</button>
+    <h2 class="form-title">📜 XP-Verlauf</h2>
+    <div id="xpLogEntries" style="margin-top: 20px; max-height: 60vh; overflow-y: auto;">
+      <p>Keine XP-Aktivitäten vorhanden.</p>
+    </div>
+  </div>
+</div>
+
 <script>
 function showVerifyEmailOverlay(username, email) {
   document.getElementById('verifyUserName').textContent = username;
@@ -827,6 +993,118 @@ function showVerifyEmailOverlay(username, email) {
 function closeVerifyEmail() {
   document.getElementById('verifyEmailOverlay').style.display = 'none';
 }
+
+// Feedback anzeigen
+function showFeedbackForm() {
+  if (!currentUser) {
+    showNotification("Bitte melde dich an, um Feedback zu geben.", "error");
+    return;
+  }
+  document.getElementById("feedbackOverlay").style.display = "flex";
+}
+function hideFeedbackForm() {
+  document.getElementById("feedbackOverlay").style.display = "none";
+}
+let selectedStars = 0;
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("#starRating span").forEach(star => {
+    star.addEventListener("click", () => {
+      selectedStars = parseInt(star.getAttribute("data-stars"));
+      document.querySelectorAll("#starRating span").forEach(s => s.classList.remove("selected"));
+      for (let i = 0; i < selectedStars; i++) {
+        document.querySelectorAll("#starRating span")[i].classList.add("selected");
+      }
+    });
+  });
+
+  document.getElementById("feedbackForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    if (selectedStars === 0) {
+      showNotification("Bitte Sterne auswählen", "error");
+      return;
+    }
+
+    const reason = document.getElementById("feedbackReason").value;
+    const text = document.getElementById("feedbackText").value;
+    const username = currentUser?.user_metadata?.username || currentUser?.email;
+
+    const webhookURL = "https://discord.com/api/webhooks/1398745115966836787/5X-WnTsd9GEmoztIv3CqpJj_NKSoABFvyhDAOxmdaXyo5wjAE-eBPdCmZxMqMgndEaAX";
+
+    const payload = {
+      content: "**📩 Neues Feedback erhalten**",
+      embeds: [
+        {
+          color: 0x5865F2,
+          title: "🌟 Feedback",
+          fields: [
+            { name: "Benutzername", value: username },
+            { name: "Sterne Bewertung", value: `${"⭐".repeat(selectedStars)} (${selectedStars}/5)` },
+            { name: "Bewertungsgrund", value: reason },
+            { name: "Nachricht", value: text || "_Keine Nachricht angegeben_" }
+          ],
+          timestamp: new Date().toISOString()
+        }
+      ]
+    };
+
+    try {
+      await fetch(webhookURL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      hideFeedbackForm();
+      document.getElementById("feedbackForm").reset();
+      selectedStars = 0;
+      document.querySelectorAll("#starRating span").forEach(s => s.classList.remove("selected"));
+      showNotification("Danke für dein Feedback!", "success");
+    } catch (error) {
+      console.error(error);
+      showNotification("Senden fehlgeschlagen", "error");
+    }
+  });
+});
+
+
+function showUpdatesSequence() {
+  const loading = document.getElementById("updatesLoading");
+  loading.style.display = "flex";
+
+  setTimeout(() => {
+    loading.style.opacity = "0";
+    setTimeout(() => {
+      loading.style.display = "none";
+      loading.style.opacity = "1";
+      document.getElementById("updatesOverlay").style.display = "flex";
+    }, 500);
+  }, 10000);
+}
+
+
+function showSecurityStatus() {
+  if (!currentUser) {
+    showNotification("Nicht eingeloggt", "error");
+    return;
+  }
+
+  document.getElementById("secEmail").textContent = currentUser.email || "-";
+  document.getElementById("secEmailConfirmed").textContent = currentUser.email_confirmed_at ? "✅ Ja" : "❌ Nein";
+
+  const createdAt = new Date(currentUser.created_at).toLocaleString('de-DE');
+  document.getElementById("secCreatedAt").textContent = createdAt;
+
+  const lastLogin = currentUser.last_sign_in_at
+    ? new Date(currentUser.last_sign_in_at).toLocaleString('de-DE')
+    : "Unbekannt";
+  document.getElementById("secLastLogin").textContent = lastLogin;
+
+  document.getElementById("securityOverlay").style.display = "flex";
+}
+
+function hideSecurityStatus() {
+  document.getElementById("securityOverlay").style.display = "none";
+}
+
 </script>
 <!-- Login Form -->
 <div class="form-overlay" id="loginOverlay">
@@ -866,6 +1144,7 @@ function closeVerifyEmail() {
 <div class="form-group">
 <label class="form-label" for="registerPassword">Passwort</label>
 <input class="form-input" id="registerPassword" required="" type="password"/>
+<div id="passwordStrengthFeedback" style="margin-top:5px; font-size: 13px;"></div>
 </div>
 <div class="form-group">
 <label class="form-label" for="confirmPassword">Passwort bestätigen</label>
@@ -993,9 +1272,23 @@ function switchToLogin() {
     showLoginForm();
 }
 
+
 function showContactForm() {
-    document.getElementById("contactOverlay").style.display = "flex";
+  const overlay = document.createElement("div");
+  overlay.className = "welcome-overlay";
+  overlay.innerHTML = `
+    <div class="welcome-box">
+      <button class="welcome-close" onclick="this.parentElement.parentElement.remove()">×</button>
+      <h2>📪 Derzeit nicht aufrufbar</h2>
+      <p>Derzeit bieten wir kein Kontaktformular an.<br><br>
+      Schreiben Sie uns einfach per E-Mail an:<br>
+      <strong>hamburgp20@gmail.com</strong><br><br>
+      Oder wenden Sie sich an unseren <strong><a href="https://discord.gg/QjnJJWK8U8" target="_blank" style="color: var(--primary-color); text-decoration: underline;">Discord-Server</a></strong>.</p>
+    </div>
+  `;
+  document.body.appendChild(overlay);
 }
+
 
 function hideContactForm() {
     document.getElementById("contactOverlay").style.display = "none";
@@ -1075,7 +1368,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         initParticles();
 
         // Load saved theme from session
-        const savedTheme = sessionStorage.getItem('theme') || 'light';
+        const savedTheme = localStorage.getItem('theme') || 'light';
         setTheme(savedTheme);
 
         // Check current user session
@@ -1091,6 +1384,7 @@ if (!currentUser) {
             if (event === 'SIGNED_IN' && session) {
                 currentUser = session.user;
                 updateUIForLoggedInUser();
+                checkUserSecurity(currentUser);
                 hideAllForms();
                 showNotification('Erfolgreich angemeldet!', 'success');
             } else if (event === 'SIGNED_OUT') {
@@ -1114,11 +1408,12 @@ function setTheme(theme) {
     } else {
         document.documentElement.removeAttribute('data-theme');
     }
-    sessionStorage.setItem('theme', theme);
+    localStorage.setItem('theme', theme);
 }
 
 // UI Update Functions
 function updateUIForLoggedInUser() {
+    rewardDailyXP();
     authButtons.style.display = 'none';
     userProfile.style.display = 'flex';
     
@@ -1134,7 +1429,69 @@ function updateUIForLoggedOutUser() {
     userProfile.style.display = 'none';
 }
 
+// === XP via Supabase speichern ===
+
+async function fetchUserXP(userId) {
+  const { data, error } = await supabaseClient
+    .from('user_xp')
+    .select('xp')
+    .eq('user_id', userId)
+    .single();
+
+  if (error && error.code !== 'PGRST116') {
+    console.error('Fehler beim Abrufen von XP:', error);
+    return 0;
+  }
+
+  return data?.xp || 0;
+}
+
+async function saveUserXP(userId, newXP) {
+  const { error } = await supabaseClient
+    .from('user_xp')
+    .upsert({ user_id: userId, xp: newXP }, { onConflict: ['user_id'] });
+
+  if (error) console.error('Fehler beim Speichern von XP:', error);
+}
+
+function updateXPUI(xp) {
+  const level = Math.floor(xp / 100) + 1;
+  const xpInLevel = xp % 100;
+  document.getElementById('userXP').textContent = `${xpInLevel} / 100`;
+  document.getElementById('userLevel').textContent = level;
+
+  // Badge-Anzeige ab Level 5
+  if (level >= 5) {
+    document.getElementById('userBadge').textContent = '✨ Selten';
+  }
+}
+
+async function rewardDailyXP() {
+  if (!currentUser) return;
+  const today = new Date().toISOString().split('T')[0];
+  const lastXPDate = localStorage.getItem('lastXPReward');
+  if (lastXPDate === today) return;
+
+  const userId = currentUser.id;
+  let currentXP = await fetchUserXP(userId);
+  currentXP += 35;
+  await saveUserXP(userId, currentXP);
+  localStorage.setItem('lastXPReward', today);
+  updateXPUI(currentXP);
+}
+
+
 // Auth Functions
+
+
+function showBanPopup() {
+  document.getElementById("banOverlay").style.display = "flex";
+}
+function closeBanPopup() {
+  document.getElementById("banOverlay").style.display = "none";
+}
+
+
 async function handleLogin(email, password) {
     try {
         const { data, error } = await supabaseClient.auth.signInWithPassword({
@@ -1150,9 +1507,12 @@ async function handleLogin(email, password) {
 
         let userMessage = 'Anmeldung fehlgeschlagen.';
 
-        if (error?.code === 'user_banned') {
-            userMessage = 'Dein Konto wurde gesperrt. Bitte kontaktiere den Support.';
-        } else if (error?.code === 'invalid_login_credentials' || error?.message === 'Invalid login credentials') {
+        
+if (error?.code === 'user_banned') {
+  showBanPopup();
+  return { success: false, error: "Dein Konto wurde gesperrt." };
+}
+ else if (error?.code === 'invalid_login_credentials' || error?.message === 'Invalid login credentials') {
             userMessage = 'E-Mail oder Passwort ist ungültig.';
         } else {
             userMessage = 'Ein unerwarteter Fehler ist mehrmals aufgetreten';
@@ -1334,7 +1694,7 @@ document.addEventListener('click', function () {
 <div class="form-overlay" id="editProfileOverlay" style="display: none;">
 <div class="form-container">
 <button class="form-close" onclick="hideEditProfileForm()">×</button>
-<h2 class="form-title">Profil bearbeiten</h2>
+<h2 class="form-title">🛠 Profil bearbeiten</h2>
 <form id="editProfileForm">
 <div class="form-group">
 <label class="form-label" for="editUsername">Benutzername</label>
@@ -1344,6 +1704,15 @@ document.addEventListener('click', function () {
 <label class="form-label" for="editEmail">E-Mail</label>
 <input class="form-input" id="editEmail" required="" type="email"/>
 </div>
+
+<div class="form-group">
+  <label class="form-label" for="editTheme">Design</label>
+  <select class="form-input" id="editTheme">
+    <option value="light">Hell</option>
+    <option value="dark">Dunkel</option>
+  </select>
+</div>
+
 <button class="form-submit" type="submit">Profil Speichern</button>
 </form>
 </div>
@@ -1354,7 +1723,7 @@ document.addEventListener('click', function () {
 <div class="user-avatar" id="userAvatar">U</div>
 <span id="userName">User</span>
 <div class="user-dropdown" id="userDropdown" style="display: none;">
-<div class="dropdown-item" onclick="showEditProfileForm()">Profil bearbeiten</div>
+<div class="dropdown-item" onclick="showEditProfileFormWithPassword()">Profil bearbeiten</div>
 <div class="dropdown-item" onclick="showWarnings()">⚠️ Verwarnungen</div>
 <div class="dropdown-item" onclick="logout()">Logout</div>
 </div>
@@ -1377,13 +1746,13 @@ function setTheme(theme) {
     currentTheme = theme;
     document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'dark' : '');
     localStorage.setItem('theme', theme);
-    sessionStorage.setItem('theme', theme);
+    localStorage.setItem('theme', theme);
     document.body.classList.add("theme-transition");
     window.setTimeout(() => document.body.classList.remove("theme-transition"), 500);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const savedTheme = localStorage.getItem('theme') || 'light';
+    const savedTheme = localStorage.getItem('theme') || sessionStorage.getItem('theme') || 'light';
     setTheme(savedTheme);
     updateThemeToggleButton();
 });
@@ -1402,6 +1771,8 @@ function showEditProfileForm() {
   const createdAt = currentUser.created_at;
   document.getElementById('editUsername').value = username;
   document.getElementById('editEmail').value = email;
+  const themePref = localStorage.getItem('theme') || 'light';
+  document.getElementById('editTheme').value = themePref;
 
   const sinceDate = new Date(createdAt);
   const options = {
@@ -1478,7 +1849,7 @@ document.getElementById('activityButton').addEventListener('click', function () 
 <div class="welcome-box">
 <button class="welcome-close" onclick="closePasswordChangedPopup()">×</button>
 <h2>Hallo Nutzer,</h2>
-<p>Sie haben Ihr Passwort vor Kurzem aktualisiert und müssen es noch per E-Mail bestätigen.</p>
+<p>Vielen Dank das sie ihr Passwort geändert haben, um ihre Sicherheit zu stärken, ihr Passwort ist in wenigen Sekunden einsatzbereit vielen Dank für die Nutzung bei uns.</p>
 <button class="btn btn-primary" onclick="closePasswordChangedPopup()">Verstanden</button>
 </div>
 </div>
@@ -1572,8 +1943,7 @@ function showComingUpdatePopup() {
 
 <!-- SUBMIT-HANDLER FÜR PROFIL SPEICHERN -->
 <script>
-document.getElementById('editProfileForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
+
 
   const username = document.getElementById('editUsername').value.trim();
   const email = document.getElementById('editEmail').value.trim();
@@ -1600,8 +1970,7 @@ document.getElementById('editProfileForm').addEventListener('submit', async (e) 
   } catch (err) {
     console.error(err);
     showNotification('Unerwarteter Fehler beim Speichern', 'error');
-  }
-});
+  };
 </script>
 
 <style>
@@ -1636,6 +2005,47 @@ document.getElementById('editProfileForm').addEventListener('submit', async (e) 
 #warningOverlay .welcome-box small {
   font-size: 15px;
   color: var(--text-secondary);
+}
+
+
+#starRating span {
+  font-size: 24px;
+  cursor: pointer;
+  color: #ccc;
+}
+#starRating span.selected {
+  color: gold;
+}
+
+
+/* Glänzender Effekt bei Hover für .btn-primary */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(120deg, rgba(255,255,255,0.2), rgba(255,255,255,0.6), rgba(255,255,255,0.2));
+  transform: skewX(-20deg);
+  transition: left 0.5s;
+}
+.btn-primary:hover::after {
+  left: 125%;
+}
+
+
+/* Feature-Karten mit weicher Transformation und Licht-Glow beim Hover */
+.feature-card {
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+.feature-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
 }
 
 </style>
@@ -1749,7 +2159,49 @@ function showComingUpdatePopup() {
   font-size: 15px;
   color: var(--text-secondary);
 }
+
+#starRating span {
+  font-size: 24px;
+  cursor: pointer;
+  color: #ccc;
+}
+#starRating span.selected {
+  color: gold;
+}
+
+
+/* Glänzender Effekt bei Hover für .btn-primary */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(120deg, rgba(255,255,255,0.2), rgba(255,255,255,0.6), rgba(255,255,255,0.2));
+  transform: skewX(-20deg);
+  transition: left 0.5s;
+}
+.btn-primary:hover::after {
+  left: 125%;
+}
+
+
+/* Feature-Karten mit weicher Transformation und Licht-Glow beim Hover */
+.feature-card {
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+.feature-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+}
+
 </style>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
@@ -1919,6 +2371,798 @@ list.innerHTML = data.map(warn => `
 }
 </script>
 
+
+<!-- 📛 XP + Badge + Fun Fact System -->
+<script>
+const funFacts = [
+  "💡 Die EHE Community wurde während eines Regensturms geboren.",
+  "🎮 Jeden Monat werden über 30.000 Spielminuten gezählt.",
+  "🌍 Über 10 Länder sind in der Community vertreten.",
+  "🧩 Es gibt mindestens 5 versteckte Easter Eggs auf der Seite!",
+  "📅 Unser erster Event war ein spontaner Voice-Chat!"
+];
+
+function rewardDailyXP() {
+  const today = new Date().toISOString().split('T')[0];
+  const lastXPDate = localStorage.getItem('lastXPReward');
+  if (lastXPDate === today) return;
+  let currentXP = parseInt(localStorage.getItem('userXP') || "0");
+  currentXP += 35;
+  logXPEvent("Täglicher Login", 35);
+  localStorage.setItem('userXP', currentXP);
+  localStorage.setItem('lastXPReward', today);
+  showNotification(`🎉 35 XP für heutigen Login erhalten!`, "success");
+  updateXPDisplay(currentXP);
+}
+
+function getBadgeForXP(xp) {
+  if (xp >= 1500) return "🟥 Ultra Legende"
+  if (xp >= 1000) return "🟥 Legende";
+  if (xp >= 600)  return "🟠 Elite";
+  if (xp >= 300)  return "🟣 Veteran";
+  if (xp >= 150)  return "🔵 Aktives Mitglied";
+  return "🟢 Neuling";
+}
+
+function updateXPDisplay(xp) {
+  const xpEl = document.getElementById("userXP");
+  const levelEl = document.getElementById("userLevel");
+  const badgeEl = document.getElementById("userBadge");
+  const level = Math.floor(xp / 100) + 1;
+  const progress = xp % 100;
+  if (xpEl) xpEl.textContent = `${progress} / 100`;
+  if (levelEl) levelEl.textContent = `${level}`;
+  if (badgeEl) badgeEl.textContent = getBadgeForXP(xp);
+}
+
+function showDailyFunFact() {
+  const shown = sessionStorage.getItem("funFactShownToday");
+  if (shown) return;
+  const fact = funFacts[Math.floor(Math.random() * funFacts.length)];
+  const overlay = document.createElement('div');
+  overlay.className = 'welcome-overlay';
+  overlay.innerHTML = `
+    <div class="welcome-box">
+      <button class="welcome-close" onclick="this.parentElement.parentElement.remove()">×</button>
+      <h2>🎉 Fun Fact des Tages</h2>
+      <p>${fact}</p>
+      <button class="btn btn-primary" onclick="this.closest('.welcome-overlay').remove()">Nice!</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  sessionStorage.setItem("funFactShownToday", "true");
+}
+
+// Call in updateUIForLoggedInUser()
+if (typeof updateUIForLoggedInUser_original === "undefined") {
+  updateUIForLoggedInUser_original = updateUIForLoggedInUser;
+  updateUIForLoggedInUser = function () {
+    updateUIForLoggedInUser_original();
+    rewardDailyXP();
+    showDailyFunFact();
+    const xp = parseInt(localStorage.getItem('userXP') || "0");
+    updateXPDisplay(xp);
+  };
+}
+</script>
+
+
+<!-- Discord Popup -->
+<div class="form-overlay" id="discordPopup" style="display: none;">
+  <div class="form-container" style="max-width: 400px;">
+    <button class="form-close" onclick="hideDiscordPopup()">×</button>
+    <h2 class="form-title">🎮 Unser Discord-Server</h2>
+    <iframe src="https://discord.com/widget?id=1273340696916394076&theme=dark"
+            width="100%" height="400"
+            allowtransparency="true" frameborder="0"
+            sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts">
+    </iframe>
+  </div>
+</div>
+
+
+<script>
+function showDiscordPopup() {
+  if (!currentUser) {
+    showNotification("Bitte melde dich an, um den Discord zu öffnen!", "error");
+    return;
+  }
+  document.getElementById('discordPopup').style.display = 'flex';
+}
+
+function hideDiscordPopup() {
+  document.getElementById('discordPopup').style.display = 'none';
+}
+</script>
+
+
+<!-- Feedback-Formular -->
+<div class="form-overlay" id="feedbackOverlay" style="display: none;">
+  <div class="form-container">
+    <button class="form-close" onclick="hideFeedbackForm()">×</button>
+    <h2 class="form-title">⭐ Feedback abgeben</h2>
+    <form id="feedbackForm">
+      <div class="form-group">
+        <label class="form-label">Sterne</label>
+        <div id="starRating">
+          <span data-stars="1">★</span>
+          <span data-stars="2">★</span>
+          <span data-stars="3">★</span>
+          <span data-stars="4">★</span>
+          <span data-stars="5">★</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Grund</label>
+        <select class="form-input" id="feedbackReason" required>
+          <option value="">Wähle einen Grund</option>
+          <option value="Allgemein">Allgemeines Feedback</option>
+          <option value="Lob">Lob</option>
+          <option value="Verbesserung">Verbesserungsvorschlag</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nachricht (optional)</label>
+        <textarea class="form-input" id="feedbackText" rows="4"></textarea>
+      </div>
+      <button class="form-submit" type="submit">Absenden</button>
+    </form>
+  </div>
+</div>
+
+
+<!-- Spinner-Loading Popup -->
+<div class="welcome-overlay" id="updatesLoading" style="display: none;">
+  <div class="welcome-box" style="text-align: center;">
+    <div class="loading-spinner" style="width: 60px; height: 60px; border: 6px solid rgba(255,255,255,0.3); border-top: 6px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto;"></div>
+    <h2 style="color: var(--text-primary); margin-bottom: 10px;">Bitte warten...</h2>
+    <p style="color: var(--text-secondary); font-size: 16px;">Wir laden die Updates für Sie.</p>
+  </div>
+</div>
+
+<!-- Wartungspopup -->
+<div class="welcome-overlay" id="updatesOverlay" style="display: none;">
+  <div class="welcome-box">
+    <button class="welcome-close" onclick="document.getElementById('updatesOverlay').style.display='none'">×</button>
+    <h2>🛠️ Updates in Arbeit</h2>
+    <p>Aktuell sind Wartungsarbeiten an diesem System.<br/>Bitte versuchen Sie es später erneut.</p>
+  </div>
+</div>
+
+
+<!-- 🎖️ Badge-Overlay mit Beschreibung -->
+<div class="form-overlay" id="badgeOverlay" style="display: none;">
+  <div class="form-container" style="max-height: 85vh; overflow: hidden; width: 95%; max-width: 600px;">
+    <button class="form-close" onclick="hideBadgePopup()">×</button>
+    <h2 class="form-title">🎖 Deine erhaltenen Badges</h2>
+    <div id="badgeList" class="badge-scroll-box"></div>
+  </div>
+</div>
+
+
+
+<!-- Allgemeines Info-Popup -->
+<div class="welcome-overlay" id="cardInfoPopup" style="display: none;">
+  <div class="welcome-box">
+    <button class="welcome-close" onclick="hideCardPopup()">×</button>
+    <h2 id="cardPopupTitle">🔒 Geschützt</h2>
+    <p id="cardPopupText">Diese Funktion ist nur für angemeldete Nutzer verfügbar.</p>
+    <button class="btn btn-primary" onclick="hideCardPopup()">OK</button>
+  </div>
+</div>
+
+
+<script>
+function showCardPopup(title, text) {
+  document.getElementById("cardPopupTitle").textContent = title;
+  document.getElementById("cardPopupText").textContent = text;
+  document.getElementById("cardInfoPopup").style.display = "flex";
+}
+
+function hideCardPopup() {
+  document.getElementById("cardInfoPopup").style.display = "none";
+}
+
+function handleCommunityChat() {
+  if (!currentUser) {
+    showNotification("❗ Nur für angemeldete Nutzer verfügbar: Community Chat", "warning");
+    return;
+  }
+  showCardPopup("💬 Community Chat", "Der Community Chat befindet sich aktuell in der Entwicklung.");
+}
+
+function handleGamingEvents() {
+  if (!currentUser) {
+    showNotification("❗ Nur für angemeldete Nutzer verfügbar: Gaming Events", "warning");
+    return;
+  }
+  showCardPopup("🎮 Gaming Events", "Zurzeit stehen keine aktiven Events an.");
+}
+
+function handleAchievements() {
+  if (!currentUser) {
+    showNotification("❗ Nur für angemeldete Nutzer verfügbar: Achievements", "warning");
+    return;
+  }
+  showCardPopup("🏆 Achievements", "Wir haben derzeit Probleme beim Öffnen der Achievements.");
+}
+</script>
+
+
+
+<footer style="text-align: center; padding: 40px 20px; color: var(--text-secondary); font-size: 14px;">
+  <div>© 2025 EHE Community</div>
+  <div style="margin-top: 5px;">Entwickelt von <strong style="color: var(--primary-color)">EHE Community Webseite Studio</strong></div>
+</footer>
+
+
+<script>
+document.querySelectorAll('.nav-link').forEach(link => {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = this.textContent.trim().toLowerCase();
+    let id = {
+      home: 'mainContent',
+      community: 'features-start',
+      events: 'features-start',
+      kontakt: 'kontaktbereich'
+    }[target];
+    if (id && document.getElementById(id)) {
+      document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+});
+</script>
+
+
+<!-- Ban-Popup Overlay -->
+<div class="welcome-overlay" id="banOverlay" style="display: none;">
+  <div class="welcome-box">
+    <button class="welcome-close" onclick="closeBanPopup()">×</button>
+    <h2>🚫 Dein Konto wurde gesperrt</h2>
+    <p><strong>Grund:</strong> Gegen unsere Community Richtlinien verstoßen</p>
+    <p><strong>Details:</strong> Dein Verhalten verstößt gegen unsere Regeln. Du wurdest daher temporär oder dauerhaft gesperrt.</p>
+    <p><strong>Konto Entsperrt:</strong> Bei Fragen wann ihr Konto entsperrt wird, melden sie sich gerne per Discord oder per E-Mail an uns.</p>
+    <p><strong>Entsperrung möglich:</strong> <a href="https://roxyboy179.github.io/ehe_wiederspruch/" target="_blank" style="color: var(--primary-color); font-weight: bold;">Antrag auf Entsperrung stellen</a></p>
+    <button class="btn btn-primary" onclick="closeBanPopup()">Verstanden</button>
+  </div>
+</div>
+
+
+<!-- Passwort bestätigen (für Profilbearbeitung & Passwortänderung) -->
+<div class="form-overlay" id="confirmPasswordOverlay" style="display: none;">
+  <div class="form-container">
+    <button class="form-close" onclick="hideConfirmPassword()">×</button>
+    <h2 class="form-title">🔒 Passwort bestätigen</h2>
+    <form id="confirmPasswordForm">
+      <div class="form-group">
+        <label class="form-label" for="confirmPasswordInput">Bitte gib dein aktuelles Passwort ein</label>
+        <input class="form-input" id="confirmPasswordInput" type="password" required />
+      </div>
+      <button class="form-submit" type="submit">Bestätigen</button>
+    </form>
+  </div>
+</div>
+
+
+<script>
+function showEditProfileFormWithPassword() {
+  if (!currentUser) {
+    showNotification("Du musst angemeldet sein", "error");
+    return;
+  }
+  sessionStorage.setItem("nextAction", "editProfile");
+  document.getElementById("confirmPasswordOverlay").style.display = "flex";
+}
+
+function showChangePasswordFormWithPassword() {
+  if (!currentUser) {
+    showNotification("Du musst angemeldet sein", "error");
+    return;
+  }
+  sessionStorage.setItem("nextAction", "changePassword");
+  document.getElementById("confirmPasswordOverlay").style.display = "flex";
+}
+
+function hideConfirmPassword() {
+  document.getElementById("confirmPasswordOverlay").style.display = "none";
+  document.getElementById("confirmPasswordForm").reset();
+}
+
+document.getElementById("confirmPasswordForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+  const password = document.getElementById("confirmPasswordInput").value;
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email: currentUser.email,
+      password: password
+    });
+    if (error) {
+      showNotification("Falsches Passwort", "error");
+      return;
+    }
+    hideConfirmPassword();
+    const action = sessionStorage.getItem("nextAction");
+    sessionStorage.removeItem("nextAction");
+    if (action === "editProfile") {
+      showEditProfileForm();
+    } else if (action === "changePassword") {
+      showChangePasswordForm();
+    }
+  } catch (err) {
+    console.error(err);
+    showNotification("Fehler bei der Verifizierung", "error");
+  }
+});
+</script>
+
+
+<script>
+
+function toggleTheme() {
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  applyTheme(newTheme);
+}
+
+function applyTheme(theme) {
+  currentTheme = theme;
+  if (theme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+  localStorage.setItem('theme', theme);
+  updateThemeToggleButton();
+}
+
+function updateThemeToggleButton() {
+  const btn = document.getElementById('themeToggle');
+  if (btn) {
+    btn.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+  }
+}
+
+// Theme beim Laden setzen
+document.addEventListener('DOMContentLoaded', () => {
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  applyTheme(savedTheme);
+});
+</script>
+
+
+<script>
+// 🚨 Verwarnungen anzeigen im Dropdown (Supabase-Tabelle: 'warnings')
+async function checkWarnings() {
+  if (!currentUser) return;
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('warnings')
+      .select('*')
+      .eq('user_id', currentUser.id);
+
+    const badge = document.createElement('div');
+    badge.style.marginTop = '5px';
+    badge.style.fontSize = '12px';
+    badge.style.fontWeight = 'bold';
+
+    if (error) {
+      console.error("Fehler beim Laden der Verwarnungen:", error);
+      return;
+    }
+
+    if (data && data.length > 0) {
+      const latest = data[0];
+      badge.innerHTML = `⚠️ <span style="color: var(--error-color);">Verwarnt</span><br><small>Grund: ${latest.reason}<br>Datum: ${new Date(latest.date).toLocaleDateString("de-DE")}</small>`;
+    } else {
+      badge.innerHTML = `🟢 <span style="color: var(--success-color);">Keine Verwarnung</span>`;
+    }
+
+    const dropdown = document.getElementById('userDropdown');
+    if (dropdown) dropdown.appendChild(badge);
+
+  } catch (e) {
+    console.error("Unbekannter Fehler bei Warnungen:", e);
+  }
+}
+
+// Beim Login oder UI-Update ausführen
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    if (currentUser) checkWarnings();
+  }, 2000);
+});
+</script>
+
+
+<script>
+// === Inaktivitätserkennung ===
+let inactivityTime = 5 * 60 * 1000; // 5 Minuten bis Popup
+let logoutTime = 30 * 60 * 1000;    // 30 Minuten bis Logout nach Popup
+let warningTimeout, logoutTimeout, countdownInterval;
+let countdownSeconds = 1800;
+
+function resetInactivityTimer() {
+  clearTimeout(warningTimeout);
+  clearTimeout(logoutTimeout);
+  clearInterval(countdownInterval);
+  document.getElementById('inactivityOverlay')?.remove();
+
+  if (currentUser) {
+    warningTimeout = setTimeout(showInactivityWarning, inactivityTime);
+  }
+}
+
+function showInactivityWarning() {
+  countdownSeconds = 1800;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'inactivityOverlay';
+  overlay.className = 'welcome-overlay';
+  overlay.innerHTML = `
+    <div class="welcome-box">
+      <button class="welcome-close" onclick="cancelLogout()">×</button>
+      <h2>⚠️ Inaktivität erkannt</h2>
+      <p>Sie werden in Kürze automatisch ausgeloggt, da unser System erkannt hat, dass Sie inaktiv sind.</p>
+      <p>Automatische Abmeldung in: <strong id="inactivityCountdown">10:00</strong></p>
+      <button class="btn btn-primary" onclick="cancelLogout()">Logout abbrechen</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  updateCountdown(); // sofort ersten Wert setzen
+  countdownInterval = setInterval(updateCountdown, 1000);
+
+  logoutTimeout = setTimeout(() => {
+    document.getElementById('inactivityOverlay')?.remove();
+    logout();
+  }, logoutTime);
+}
+
+function updateCountdown() {
+  const el = document.getElementById('inactivityCountdown');
+  if (!el) return;
+
+  const minutes = Math.floor(countdownSeconds / 60);
+  const seconds = countdownSeconds % 60;
+  el.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+  countdownSeconds--;
+  if (countdownSeconds <= 0) clearInterval(countdownInterval);
+}
+
+function cancelLogout() {
+  resetInactivityTimer();
+}
+
+// Events zur Aktivitätserkennung
+['click', 'mousemove', 'keydown', 'touchstart'].forEach(evt =>
+  document.addEventListener(evt, resetInactivityTimer)
+);
+
+// Beim Start nur aktivieren, wenn eingeloggt
+document.addEventListener('DOMContentLoaded', () => {
+  if (currentUser) resetInactivityTimer();
+});
+</script>
+
+
+
+<script>
+function checkPasswordStrength(password) {
+  const feedback = document.getElementById('passwordStrengthFeedback');
+  let strength = 0;
+  if (password.length >= 8) strength++;
+  if (/[A-Z]/.test(password)) strength++;
+  if (/[a-z]/.test(password)) strength++;
+  if (/[0-9]/.test(password)) strength++;
+  if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+  if (password.toLowerCase().includes("123456") || password.toLowerCase().includes("passwort") || password.toLowerCase().includes("admin")) {
+    strength = 0;
+  }
+
+  const messages = ["Sehr schwach", "Schwach", "Mittel", "Gut", "Stark", "Sehr stark"];
+  const colors = ["#e53e3e", "#ed8936", "#ecc94b", "#68d391", "#48bb78", "#38a169"];
+  feedback.textContent = messages[strength];
+  feedback.style.color = colors[strength];
+}
+
+// Events verbinden
+document.addEventListener('DOMContentLoaded', () => {
+  const passwordInput = document.getElementById('registerPassword') || document.getElementById('newPassword');
+  if (passwordInput) {
+    passwordInput.addEventListener('input', () => {
+      checkPasswordStrength(passwordInput.value);
+    });
+  }
+});
+</script>
+
+<script>
+function checkUserSecurity(user) {
+  const weakPasswords = ["123456", "password", "passwort", "admin", "12345678"];
+  const username = user.user_metadata?.username || "";
+  const emailConfirmed = user.email_confirmed_at;
+  const password = ""; // Kann aus Sicherheitsgründen nicht clientseitig geprüft werden.
+
+  let warningMessage = "";
+
+  if (!emailConfirmed) {
+    warningMessage += "⚠️ Deine E-Mail-Adresse wurde noch nicht bestätigt.\n";
+  }
+  if (username.length < 3 || /[^a-zA-Z0-9]/.test(username)) {
+    warningMessage += "⚠️ Dein Benutzername wirkt unsicher oder ist zu kurz.\n";
+  }
+
+  if (warningMessage) {
+    alert("🔐 Sicherheitswarnung:\n\n" + warningMessage + "\nBitte behebe diese Probleme, sonst kann dein Profil eingeschränkt werden.");
+  }
+}
+</script>
+
+<!-- Sicherheitswarnungs-Popup -->
+<div class="welcome-overlay" id="securityWarningOverlay" style="display: none;">
+  <div class="welcome-box" style="border: 2px solid var(--error-color);">
+    <button class="welcome-close" onclick="closeSecurityWarning()">×</button>
+    <h2>🔐 Sicherheitswarnung</h2>
+    <p id="securityWarningMessage">Dein Profil enthält Sicherheitslücken.</p>
+    <button class="btn btn-primary" onclick="closeSecurityWarning()">Verstanden</button>
+  </div>
+</div>
+
+
+<script>
+function checkUserSecurity(user) {
+  const username = user.user_metadata?.username || "";
+  const emailConfirmed = user.email_confirmed_at;
+
+  let warningMessage = "";
+
+  if (!emailConfirmed) {
+    warningMessage += "⚠️ Deine E-Mail-Adresse wurde noch nicht bestätigt.<br>";
+  }
+  if (username.length < 3 || /[^a-zA-Z0-9]/.test(username)) {
+    warningMessage += "⚠️ Dein Benutzername ist zu kurz oder enthält unsichere Zeichen.<br>";
+  }
+
+  if (warningMessage) {
+    document.getElementById('securityWarningMessage').innerHTML = warningMessage;
+    document.getElementById('securityWarningOverlay').style.display = 'flex';
+  }
+}
+
+function closeSecurityWarning() {
+  document.getElementById('securityWarningOverlay').style.display = 'none';
+}
+</script>
+
+
+<!-- Sicherheitswarnungs-Popup mit Sound und Warnstufe -->
+<div class="welcome-overlay" id="securityWarningOverlay" style="display: none;">
+  <div class="welcome-box" style="border: 2px solid var(--error-color);">
+    <button class="welcome-close" onclick="closeSecurityWarning()">×</button>
+    <h2 class="blinking-warning">🚨 Sicherheitswarnung</h2>
+    <p id="securityWarningMessage">Dein Profil enthält Sicherheitslücken.</p>
+    <div style="margin: 15px 0;">
+      <strong>Warnstufe:</strong> <span id="securityLevel" style="font-weight:bold;">Unbekannt</span>
+    </div>
+    <button class="btn btn-primary" onclick="closeSecurityWarning()">Verstanden</button>
+  </div>
+</div>
+<audio id="securityWarningSound" src="https://www.myinstants.com/media/sounds/mgs-alert.mp3"></audio>
+
+
+<script>
+function checkUserSecurity(user) {
+  const username = user.user_metadata?.username || "";
+  const emailConfirmed = user.email_confirmed_at;
+
+  let warningMessage = "";
+  let level = 0;
+
+  if (!emailConfirmed) {
+    warningMessage += "⚠️ Deine E-Mail-Adresse wurde noch nicht bestätigt.<br>";
+    level += 1;
+  }
+  if (username.length < 3 || /[^a-zA-Z0-9]/.test(username)) {
+    warningMessage += "⚠️ Dein Benutzername ist zu kurz oder enthält unsichere Zeichen.<br>";
+    level += 1;
+  }
+
+  if (warningMessage) {
+    const levelText = level >= 2 ? "⚠️ Hoch" : "🔸 Mittel";
+    document.getElementById('securityWarningMessage').innerHTML = warningMessage;
+    document.getElementById('securityLevel').textContent = levelText;
+    document.getElementById('securityWarningOverlay').style.display = 'flex';
+    document.getElementById('securityWarningSound').play().catch(() => {});
+  }
+}
+
+function closeSecurityWarning() {
+  document.getElementById('securityWarningOverlay').style.display = 'none';
+}
+</script>
+
+<!-- Sicherheitsstatus-Overlay -->
+<div class="form-overlay" id="securityOverlay" style="display: none;">
+  <div class="form-container">
+    <button class="form-close" onclick="hideSecurityStatus()">×</button>
+    <h2 class="form-title">🛡️ Sicherheitsstatus</h2>
+    <p style="margin-top: -10px; color: var(--text-secondary); font-size: 14px;">Hier findest du deinen aktuellen Sicherheitsstatus</p>
+    <div style="line-height: 1.8; font-size: 15px; color: var(--text-secondary); margin-top: 20px;">
+      <p><strong>📧 E-Mail:</strong> <span id="secEmail">-</span></p>
+      <p><strong>✅ E-Mail bestätigt:</strong> <span id="secEmailConfirmed">-</span></p>
+      <p><strong>📅 Account erstellt:</strong> <span id="secCreatedAt">-</span></p>
+      <p><strong>🕓 Letzter Login:</strong> <span id="secLastLogin">-</span></p>
+      <p><strong>🔐 Zwei-Faktor-Authentifizierung:</strong> <span id="sec2FA">Derzeit Nicht verfügbar!</span></p>
+    </div>
+  </div>
+</div>
+<div class="form-overlay" id="securityOverlay" style="display: none;">
+  <div class="form-container">
+    <button class="form-close" onclick="hideSecurityStatus()">×</button>
+    <h2 class="form-title">🔐 Sicherheitsstatus</h2>
+    <div style="line-height: 1.8;">
+      <p><strong>E-Mail:</strong> <span id="secEmail">-</span></p>
+      <p><strong>E-Mail bestätigt:</strong> <span id="secEmailConfirmed">-</span></p>
+      <p><strong>Account erstellt:</strong> <span id="secCreatedAt">-</span></p>
+      <p><strong>Letzter Login:</strong> <span id="secLastLogin">-</span></p>
+      <p><strong>2-Faktor Authentifizierung:</strong> <span id="sec2FA">Noch nicht implementiert</span></p>
+    </div>
+  </div>
+</div>
+
+<div class="welcome-overlay" id="supportzeitenOverlay" style="display: none;">
+  <div class="welcome-box">
+    <button class="welcome-close" onclick="closeSupportzeitenPopup()">×</button>
+    <h2>📅 Unsere Supportzeiten</h2>
+    <p><strong>Mo-Fr:</strong> 09:00 – 22:00 Uhr<br/>
+       <strong>Sa:</strong> 12:00 – 20:00 Uhr<br/>
+       <strong>So:</strong> ❌ Support geschlossen</p>
+    <hr style="margin: 15px 0;">
+    <p><strong>Live-Status:</strong> <span id="supportStatusLive">Wird geladen...</span></p>
+    <p><strong>Nächste Öffnung:</strong> <span id="nextOpenTime">–</span></p>
+    <p><strong>Nächste Schließung:</strong> <span id="nextCloseTime">–</span></p>
+    <p><strong>Nächster geplanter Urlaub:</strong><br><span id="nextVacation">Wird berechnet...</span></p>
+  </div>
+</div>
+
+
+<script>
+function showSupportzeitenPopup() {
+  updateSupportStatusLive();
+  document.getElementById("supportzeitenOverlay").style.display = "flex";
+}
+
+function closeSupportzeitenPopup() {
+  document.getElementById("supportzeitenOverlay").style.display = "none";
+}
+
+function updateSupportStatusLive() {
+  const now = new Date();
+  const tag = now.getDay(); // 0 = So, 1 = Mo, ..., 6 = Sa
+  const stunde = now.getHours();
+
+  let status = "❌ Geschlossen";
+
+  if (tag >= 1 && tag <= 5 && stunde >= 9 && stunde < 22) {
+    status = "✅ Geöffnet (Mo–Fr)";
+  } else if (tag === 6 && stunde >= 12 && stunde < 20) {
+    status = "✅ Geöffnet (Sa)";
+  } else if (tag === 0) {
+    status = "❌ Geschlossen (So)";
+  }
+
+  document.getElementById("supportStatusLive").textContent = status;
+
+  // Urlaubslogik (alle 2 Monate + 8 Tage Urlaub)
+  const startDate = new Date("2024-01-01T00:00:00");
+  const heute = new Date();
+  let urlaubsStart = new Date(startDate);
+
+  while (urlaubsStart < heute) {
+    urlaubsStart.setMonth(urlaubsStart.getMonth() + 2);
+  }
+
+  const urlaubsEnde = new Date(urlaubsStart);
+  urlaubsEnde.setDate(urlaubsStart.getDate() + 7);
+
+  const formatter = new Intl.DateTimeFormat('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+  document.getElementById("nextVacation").textContent = `von ${formatter.format(urlaubsStart)} bis ${formatter.format(urlaubsEnde)}`;
+}
+</script>
+
+
+<div class="welcome-overlay" id="supportzeitenOverlay" style="display: none;">
+  <div class="welcome-box">
+    <button class="welcome-close" onclick="closeSupportzeitenPopup()">×</button>
+    <h2>📅 Unsere Supportzeiten</h2>
+    <p><strong>Mo-Fr:</strong> 09:00 – 22:00 Uhr<br/>
+       <strong>Sa:</strong> 12:00 – 20:00 Uhr<br/>
+       <strong>So:</strong> ❌ Support geschlossen</p>
+    <hr style="margin: 15px 0;">
+    <p><strong>Live-Status:</strong> <span id="supportStatusLive">Wird geladen...</span></p>
+    <p><strong>Nächste Öffnung:</strong> <span id="nextOpenTime">–</span></p>
+    <p><strong>Nächste Schließung:</strong> <span id="nextCloseTime">–</span></p>
+    <p><strong>Nächster geplanter Urlaub:</strong><br><span id="nextVacation">Wird berechnet...</span></p>
+  </div>
+</div>
+
+
+<script>
+function showSupportzeitenPopup() {
+  updateSupportStatusLive();
+  document.getElementById("supportzeitenOverlay").style.display = "flex";
+}
+
+function closeSupportzeitenPopup() {
+  document.getElementById("supportzeitenOverlay").style.display = "none";
+}
+
+function updateSupportStatusLive() {
+  const now = new Date();
+  const tag = now.getDay();
+  const stunde = now.getHours();
+  const minute = now.getMinutes();
+
+  let status = "❌ Geschlossen";
+  let nextOpen = "Nicht verfügbar";
+  let nextClose = "Nicht verfügbar";
+
+  const timeStr = (h, m = 0) => `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')} Uhr`;
+
+  if (tag >= 1 && tag <= 5) {
+    if (stunde < 9) {
+      nextOpen = "Heute um 09:00 Uhr";
+      nextClose = "Heute um 22:00 Uhr";
+    } else if (stunde >= 9 && stunde < 22) {
+      status = "✅ Geöffnet (Mo–Fr)";
+      nextClose = "Heute um 22:00 Uhr";
+      nextOpen = "Morgen um 09:00 Uhr";
+    } else {
+      nextOpen = "Morgen um 09:00 Uhr";
+      nextClose = "Morgen um 22:00 Uhr";
+    }
+  } else if (tag === 6) {
+    if (stunde < 12) {
+      nextOpen = "Heute um 12:00 Uhr";
+      nextClose = "Heute um 20:00 Uhr";
+    } else if (stunde >= 12 && stunde < 20) {
+      status = "✅ Geöffnet (Sa)";
+      nextClose = "Heute um 20:00 Uhr";
+      nextOpen = "Montag um 09:00 Uhr";
+    } else {
+      nextOpen = "Montag um 09:00 Uhr";
+    }
+  } else {
+    nextOpen = "Montag um 09:00 Uhr";
+  }
+
+  document.getElementById("supportStatusLive").textContent = status;
+  document.getElementById("nextOpenTime").textContent = nextOpen;
+  document.getElementById("nextCloseTime").textContent = nextClose;
+
+  // Urlaubslogik (alle 2 Monate + 8 Tage Urlaub)
+  const startDate = new Date("2024-01-01T00:00:00");
+  const heute = new Date();
+  let urlaubsStart = new Date(startDate);
+
+  while (urlaubsStart < heute) {
+    urlaubsStart.setMonth(urlaubsStart.getMonth() + 2);
+  }
+
+  const urlaubsEnde = new Date(urlaubsStart);
+  urlaubsEnde.setDate(urlaubsStart.getDate() + 7);
+
+  const formatter = new Intl.DateTimeFormat('de-DE', {
+    weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric'
+  });
+  document.getElementById("nextVacation").textContent = `von ${formatter.format(urlaubsStart)} bis ${formatter.format(urlaubsEnde)}`;
+}
+</script>
+
+</body>
 <script>
 function closeLoginReminder(button) {
   const popup = button.closest('.welcome-overlay');
@@ -1931,7 +3175,249 @@ function closeUpdatePopup(button) {
   sessionStorage.setItem('updatePopupClosed', 'true');
 }
 
-const latestVersion = "v11.2";
+function rewardProfileEditXP() {
+  const today = new Date().toISOString().split('T')[0];
+  const lastEditDate = localStorage.getItem('lastProfileEditXP');
+
+  if (lastEditDate === today) return;
+
+  let currentXP = parseInt(localStorage.getItem('userXP') || "0");
+  currentXP += 25;
+  logXPEvent("Profil bearbeitet", 25);
+  localStorage.setItem('userXP', currentXP);
+  localStorage.setItem('lastProfileEditXP', today);
+  showNotification("🎯 25 XP für das Aktualisieren deines Profils!", "success");
+  updateXPDisplay(currentXP);
+}
+document.getElementById("editProfileForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+
+  const username = document.getElementById('editUsername').value.trim();
+  const email = document.getElementById('editEmail').value.trim();
+
+  if (!username || !email) {
+    showNotification('Bitte alle Felder ausfüllen', 'error');
+    return;
+  }
+
+  try {
+    const { data, error } = await supabaseClient.auth.updateUser({
+      email,
+      data: { username }
+    });
+
+    if (error) {
+      console.error(error);
+      showNotification('Fehler beim Aktualisieren des Profils', 'error');
+      return;
+    }
+
+    hideEditProfileForm();
+    showNotification('Profil erfolgreich aktualisiert!', 'success');
+    
+  const selectedTheme = document.getElementById('editTheme').value;
+  localStorage.setItem('theme', selectedTheme);
+  sessionStorage.setItem('theme', selectedTheme);
+  setTheme(selectedTheme);
+
+    rewardProfileEditXP(); // XP vergeben
+  } catch (err) {
+    console.error(err);
+    showNotification('Unerwarteter Fehler beim Speichern', 'error');
+  }
+});
+
+// XP Logging & Anzeige
+function logXPEvent(message, amount) {
+  const log = JSON.parse(localStorage.getItem("xpLog") || "[]");
+  const entry = {
+    message,
+    amount,
+    date: new Date().toISOString()
+  };
+  log.unshift(entry);
+  localStorage.setItem("xpLog", JSON.stringify(log));
+}
+
+window.showXPLog = showXPLog;
+function showXPLog() {
+  const container = document.getElementById("xpLogEntries");
+  const log = JSON.parse(localStorage.getItem("xpLog") || "[]");
+
+  if (!log.length) {
+    container.innerHTML = "<p>Keine XP-Aktivitäten vorhanden.</p>";
+  }
+
+  container.innerHTML = log.map(entry => `
+    <div style="border-bottom: 1px solid var(--border-color); padding: 10px 0;">
+      <strong>${entry.amount} XP:</strong> ${entry.message}<br/>
+      <small>${new Date(entry.date).toLocaleString('de-DE')}</small>
+    </div>
+  `).join("");
+
+  document.getElementById("xpLogOverlay").style.display = "flex";
+}
+// 🛠️ Diese Funktion zeigt das XP-Log an – auch wenn es leer ist
+function showXPLog() {
+  const container = document.getElementById("xpLogEntries");
+  const log = JSON.parse(localStorage.getItem("xpLog") || "[]");
+
+  if (!container) return;
+
+  let html = "";
+
+  if (!log.length) {
+    html = "<p id='noXPMessage' style='text-align:center; color: var(--text-secondary);'>Keine XP-Aktivitäten vorhanden.</p>";
+  } else {
+    html = log.map(entry => `
+      <div style="border-bottom: 1px solid var(--border-color); padding: 10px 0;">
+        <strong>${entry.amount} XP:</strong> ${entry.message}<br/>
+        <small>${new Date(entry.date).toLocaleString('de-DE')}</small>
+      </div>
+    `).join("");
+  }
+
+  container.innerHTML = html;
+  document.getElementById("xpLogOverlay").style.display = "flex";
+}
+
+// Stelle sicher, dass die Funktion global verfügbar ist
+window.showXPLog = showXPLog;
+
+</script>
+<!-- Sicherheitscheck Overlay -->
+<div class="form-overlay" id="securityCheckOverlay" style="display: none;">
+  <div class="form-container">
+    <button class="form-close" onclick="document.getElementById('securityCheckOverlay').style.display='none'">×</button>
+    <h2 class="form-title">🔐 Sicherheitscheck</h2>
+    <div id="securityCheckResults" style="margin-top: 20px;">
+      <p>Prüfe Sicherheitsstatus deines Kontos...</p>
+    </div>
+  </div>
+</div>
+
+<script>
+async function showSecurityCheck() {
+  document.getElementById("securityCheckOverlay").style.display = "flex";
+  const output = document.getElementById("securityCheckResults");
+  output.innerHTML = "<p>⏳ Sicherheitsprüfung läuft...</p>";
+
+  const email = currentUser?.email;
+  const password = localStorage.getItem("lastPassword") || "";
+  const loginTime = sessionStorage.getItem("lastLogin") || "Keine Letzte Anmeldung";
+  const ip = await fetch("https://api.ipify.org?format=json").then(res => res.json()).then(data => data.ip).catch(() => "unbekannt");
+
+  let html = `<p><strong>Letzte Anmeldung:</strong> ${loginTime}<br/><strong>IP-Adresse:</strong> ${ip}</p>`;
+
+  if (!email) {
+    output.innerHTML = html + "<p style='color: var(--error-color)'>Nicht eingeloggt.</p>";
+    return;
+  }
+
+  try {
+    const hash = await sha1(email.toLowerCase().trim());
+    const prefix = hash.substring(0, 5);
+    const suffix = hash.substring(5).toUpperCase();
+    const res = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`);
+    const text = await res.text();
+
+    const found = text.includes(suffix);
+    if (found) {
+      html += `<p style="color: var(--error-color)">⚠️ Deine E-Mail wurde in einem bekannten Datenleck gefunden.</p>`;
+    } else {
+      html += `<p style="color: var(--success-color)">✅ Keine Leaks mit deiner E-Mail bekannt.</p>`;
+    }
+
+    if (password.length < 8 || /^(123456|password|qwerty|letmein|hallo)$/i.test(password)) {
+      html += `<p style='color: var(--warning-color)'>⚠️ Dein Passwort ist möglicherweise zu schwach oder sehr beliebt.</p>`;
+    } else {
+      html += `<p style='color: var(--success-color)'>🔒 Passwort wirkt ausreichend stark.</p>`;
+    }
+
+    output.innerHTML = html;
+  } catch (err) {
+    console.error(err);
+    output.innerHTML = html + "<p style='color: var(--error-color)'>Fehler bei der Sicherheitsprüfung.</p>";
+  }
+}
+
+async function sha1(str) {
+  const buffer = new TextEncoder().encode(str);
+  const hashBuffer = await crypto.subtle.digest("SHA-1", buffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("").toUpperCase();
+}
+
+document.getElementById('userProfile')?.addEventListener('click', function (e) {
+  const dropdown = document.getElementById('userDropdown');
+  if (dropdown && !dropdown.querySelector('.dropdown-item.security-check')) {
+    const item = document.createElement('div');
+    item.className = 'dropdown-item security-check';
+    item.textContent = '🔐 Sicherheitscheck';
+    item.onclick = showSecurityCheck;
+    dropdown.prepend(item);
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (currentUser) {
+    const now = new Date().toLocaleString('de-DE');
+    sessionStorage.setItem("lastLogin", now);
+  }
+});
+</script>
+
+<script>
+function showBadgePopup() {
+  const badgeList = document.getElementById("badgeList");
+  const xp = parseInt(localStorage.getItem("userXP") || "0");
+  const badges = getUserBadgesWithDescription(xp);
+
+  if (!badges.length) {
+    badgeList.innerHTML = `
+      <div style="text-align:center; width:100%; padding:20px;">
+        <div style="font-size: 30px;">😕</div>
+        <div style="margin-top: 10px; font-weight: bold; color: var(--text-secondary);">
+          Du hast aktuell noch keine Badges erhalten.
+        </div>
+      </div>
+    `;
+  } else {
+    badgeList.innerHTML = badges.map(b => `
+      <div class="badge">
+        <div class="badge-icon">${b.icon}</div>
+        <div class="badge-title">${b.name}</div>
+        <div class="badge-desc">${b.desc}</div>
+      </div>
+    `).join("");
+  }
+
+  document.getElementById("badgeOverlay").style.display = "flex";
+}
+
+function hideBadgePopup() {
+  document.getElementById("badgeOverlay").style.display = "none";
+}
+
+function getUserBadgesWithDescription(xp) {
+  return [
+    { icon: "🟢", name: "Neuling", desc: "Du bist neu hier!", minXP: 0 },
+    { icon: "🔵", name: "Aktiv", desc: "150 XP erreicht!", minXP: 150 },
+    { icon: "🟣", name: "Veteran", desc: "300 XP geschafft!", minXP: 300 },
+    { icon: "🟠", name: "Elite", desc: "600 XP verdient!", minXP: 600 },
+    { icon: "🟥", name: "Legende", desc: "1000 XP – beeindruckend!", minXP: 1000 },
+    { icon: "🟥", name: "Ultra Legende", desc: "1500 XP – absolut top!", minXP: 1500 }
+  ].filter(b => xp >= b.minXP);
+}
+
+// ESC zum Schließen
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape") hideBadgePopup();
+});
+</script>
+
+<script>
+const latestVersion = "v19.9.1";
 const versionKey = "ehe_web_version";
 const progressKey = "downloadProgress";
 
@@ -1982,8 +3468,8 @@ function startDownloadSequence() {
 
 // 🧮 Download-Logik
 function simulateDownload() {
-  const fileSizeMB = 950;
-  const downloadSpeedMBps = 7.28;
+  const fileSizeMB = 0.945;
+  const downloadSpeedMBps = 0.02;
   const intervalMs = 1000;
   const incrementMB = downloadSpeedMBps * (intervalMs / 1000);
 
@@ -2016,12 +3502,18 @@ function simulateDownload() {
     const progress = (downloadedMB / fileSizeMB) * 100;
     document.getElementById("progressInner").style.width = `${progress}%`;
 
-    const shown = downloadedMB >= 1000
-      ? `${(downloadedMB / 1000).toFixed(2)} GB`
-      : `${Math.floor(downloadedMB)} MB`;
+    const formatSize = (mb) => {
+  if (mb >= 1024) return `${(mb / 1024).toFixed(2)} GB`;
+  if (mb >= 1) return `${Math.floor(mb)} MB`;
+  const kb = mb * 1024;
+  if (kb >= 1) return `${Math.floor(kb)} KB`;
+  return `${Math.round(kb * 1024)} Bytes`;
+};
 
-    document.getElementById("progressText").textContent =
-      `${Math.floor(progress)}% – ${shown} von ${(fileSizeMB / 1000).toFixed(1)} GB`;
+const shown = formatSize(downloadedMB);
+
+document.getElementById("progressText").textContent =
+  `${Math.floor(progress)}% – ${shown} von ${formatSize(fileSizeMB)}`;
 
     const remainingMB = fileSizeMB - downloadedMB;
     const remainingSec = remainingMB / downloadSpeedMBps;
@@ -2076,6 +3568,4 @@ function showSuccessPopup() {
   document.body.appendChild(overlay);
 }
 </script>
-
 </script>
-</body>
