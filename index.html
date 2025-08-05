@@ -846,6 +846,68 @@
   left: 125%;
 }
 
+#maintenanceOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 10, 10, 0.95);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999999;
+  animation: fadeIn 1s ease forwards;
+  color: white;
+}
+
+.maintenance-box {
+  text-align: center;
+  background: #1a202c;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  animation: scaleIn 0.6s ease;
+  max-width: 90%;
+  width: 400px;
+}
+
+.maintenance-box h2 {
+  font-size: 24px;
+  margin-bottom: 15px;
+  color: #f59e0b;
+}
+
+.maintenance-box p {
+  font-size: 15px;
+  margin-bottom: 15px;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+#countdownTimer {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #10b981;
+}
+
+.maintenance-box a {
+  color: #63b3ed;
+  text-decoration: underline;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+
 </style>
 <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet"/>
 
@@ -1028,7 +1090,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const text = document.getElementById("feedbackText").value;
     const username = currentUser?.user_metadata?.username || currentUser?.email;
 
-    const webhookURL = "https://discord.com/api/webhooks/1398745115966836787/5X-WnTsd9GEmoztIv3CqpJj_NKSoABFvyhDAOxmdaXyo5wjAE-eBPdCmZxMqMgndEaAX";
+    const webhookURL = "Keine Verbindung Zum Workbock";
 
     const payload = {
       content: "**📩 Neues Feedback erhalten**",
@@ -1060,7 +1122,7 @@ document.addEventListener("DOMContentLoaded", () => {
       showNotification("Danke für dein Feedback!", "success");
     } catch (error) {
       console.error(error);
-      showNotification("Senden fehlgeschlagen", "error");
+      showNotification("Feedback System Offline | 404 |", "error");
     }
   });
 });
@@ -3467,7 +3529,7 @@ function startDownloadSequence() {
 }
 
 // 🧮 Download-Logik
-function simulateDownload() {
+`function simulateDownload() {
   const fileSizeMB = 0.945;
   const downloadSpeedMBps = 0.02;
   const intervalMs = 1000;
@@ -3566,6 +3628,7 @@ function showSuccessPopup() {
     </div>
   `;
   document.body.appendChild(overlay);
-}
+}`
+
 </script>
 </script>
