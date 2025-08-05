@@ -3529,15 +3529,7 @@ function startDownloadSequence() {
 }
 
 // 🧮 Download-Logik
-let allowDownload = false;
-
-function simulateDownload() {
-  if (!allowDownload) {
-    console.warn("Download ist deaktiviert");
-    return;
-  }
-
-  function simulateDownload() {
+ (` function simulateDownload() {
   const fileSizeMB = 0.945;
   const downloadSpeedMBps = 0.02;
   const intervalMs = 1000;
@@ -3636,8 +3628,7 @@ function showSuccessPopup() {
     </div>
   `;
   document.body.appendChild(overlay);
-}}
-
+}}`
 
 
 </script>
