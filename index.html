@@ -925,6 +925,20 @@
 </style>
 
 </head>
+<div class="welcome-overlay" id="setPasswordOverlay" style="display: none;">
+  <div class="welcome-box">
+    <button class="welcome-close" onclick="document.getElementById('setPasswordOverlay').style.display='none'">×</button>
+    <h2>🔒 Passwort festlegen</h2>
+    <p>
+      Du hast dich mit Discord angemeldet.<br><br>
+      <strong>⚠️ Hinweis:</strong> Wenn du jetzt ein Passwort festlegst,<br>
+      kannst du dich <u>nicht mehr über das normale Login</u> anmelden –<br>
+      sondern nur noch über Discord.<br><br>
+      <input class="form-input" id="newUserPassword" type="password" placeholder="Neues Passwort" style="margin-bottom:10px;"/>
+      <button class="btn btn-primary" onclick="submitDiscordPassword()">Passwort setzen</button>
+    </p>
+  </div>
+</div>
 <body>
 <canvas id="particlesCanvas"></canvas>
 <div class="welcome-overlay" id="welcomeOverlay" style="display: none;">
@@ -1229,6 +1243,18 @@ function hideSecurityStatus() {
 <input class="form-input" id="loginPassword" required="" type="password"/>
 </div>
 <button class="form-submit" id="loginSubmit" type="submit">Anmelden</button>
+
+<div style="text-align: center; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+  <div style="margin-bottom: 10px; font-weight: 600; color: var(--text-secondary);">
+    Weitere Anmeldemöglichkeiten
+  </div>
+  <button class="btn btn-primary" type="button" onclick="loginWithDiscord()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;">
+    <img src="discord-icon.svg" alt="Discord" style="width: 20px; height: 20px;">
+    Mit Discord anmelden
+  </button>
+</div>
+
+
 </form>
 <div class="form-link">
             Noch kein Konto? <a href="#" onclick="switchToRegister()">Registrieren</a>
@@ -1590,6 +1616,44 @@ async function rewardDailyXP() {
 
 
 // Auth Functions
+
+function loginWithDiscord() {
+    supabaseClient.auth.signInWithOAuth({
+        provider: 'discord',
+        options: {
+            redirectTo: 'https://ehecommunityweb.de'
+
+        }
+    });
+}
+
+function submitDiscordPassword() {
+  const newPassword = document.getElementById('newUserPassword').value.trim();
+  if (!newPassword || newPassword.length < 6) {
+    showNotification("Passwort muss mindestens 6 Zeichen haben.", "error");
+    return;
+  }
+
+  supabaseClient.auth.updateUser({ password: newPassword })
+    .then(({ error }) => {
+      if (error) {
+        console.error(error);
+        showNotification("Fehler beim Festlegen des Passworts", "error");
+      } else {
+        showNotification("Passwort wurde gespeichert!", "success");
+        document.getElementById('setPasswordOverlay').style.display = 'none';
+      }
+    });
+}
+
+// Discord: Nach Login Overlay anzeigen
+supabaseClient.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' && session?.user?.app_metadata?.provider === 'discord') {
+    setTimeout(() => {
+      document.getElementById('setPasswordOverlay').style.display = 'flex';
+    }, 1500);
+  }
+});
 
 
 function showBanPopup() {
