@@ -3314,6 +3314,21 @@ function updateSupportStatusLive() {
 }
 </script>
 
+
+<!-- Discord-Beschränkung Popup -->
+<div class="welcome-overlay" id="discordBlockedOverlay" style="display: none;">
+  <div class="welcome-box">
+    <button class="welcome-close" onclick="document.getElementById('discordBlockedOverlay').style.display='none'">×</button>
+    <h2>🔒 Hallo <span id="discordBlockUser"></span>,</h2>
+    <p>
+      Du kannst diese Funktion leider nicht verwenden.<br/>
+      Da du dich mit <strong>Discord</strong> angemeldet hast, ist <strong><span id="discordBlockAction"></span></strong> deaktiviert.<br/><br/>
+      Die EHE Community Webseite Studio hat diese Funktion bei Discord-Anmeldung eingeschränkt.
+    </p>
+    <button class="btn btn-primary" onclick="document.getElementById('discordBlockedOverlay').style.display='none'">Verstanden</button>
+  </div>
+</div>
+
 </body>
 <script>
 function closeLoginReminder(button) {
