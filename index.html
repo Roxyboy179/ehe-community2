@@ -1536,11 +1536,33 @@ function updateUIForLoggedInUser() {
     rewardDailyXP();
     authButtons.style.display = 'none';
     userProfile.style.display = 'flex';
-    
+
     if (currentUser) {
-        const userName = currentUser.user_metadata?.username || currentUser.email.split('@')[0];
+        const discordName = currentUser.user_metadata?.user_name || currentUser.user_metadata?.full_name;
+        const manualName = currentUser.user_metadata?.username;
+        const fallbackName = currentUser.email.split('@')[0];
+
+        const userName = discordName || manualName || fallbackName;
+
         document.getElementById('userName').textContent = userName;
         document.getElementById('userAvatar').textContent = userName.charAt(0).toUpperCase();
+
+        // Buttons abhängig vom Provider anzeigen
+        const dropdown = document.getElementById('userDropdown');
+        dropdown.innerHTML = '';
+
+        dropdown.innerHTML += `<div class="dropdown-item" onclick="showSecurityStatus()">🛡️ Sicherheitsstatus</div>`;
+        dropdown.innerHTML += `<div class="dropdown-item" onclick="showXPLog()">📜 XP-Log anzeigen</div>`;
+        dropdown.innerHTML += `<div class="dropdown-item" onclick="showBadgePopup()">🎖 Aktuelle Badges</div>`;
+
+        const provider = sessionStorage.getItem('auth_provider');
+        if (provider !== 'discord') {
+            dropdown.innerHTML += `<div class="dropdown-item" onclick="showChangePasswordFormWithPassword()">Passwort ändern</div>`;
+            dropdown.innerHTML += `<div class="dropdown-item" onclick="showEditProfileFormWithPassword()">Profil bearbeiten</div>`;
+        }
+
+        dropdown.innerHTML += `<div class="dropdown-item" onclick="showWarnings()">⚠️ Verwarnungen</div>`;
+        dropdown.innerHTML += `<div class="dropdown-item" onclick="logout()">Logout</div>`;
     }
 }
 
