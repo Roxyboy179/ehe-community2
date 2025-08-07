@@ -1025,6 +1025,12 @@
   <h3>Unsere Supportzeiten</h3>
   <p>Ihr Finden sie unsere aktuellen Supportzeiten sowie unsere Urlaubstage</p>
 </div>
+<div class="feature-card" data-aos="fade-up" data-aos-delay="600" onclick="showdashboardPopup()" style="cursor: pointer;">
+  <div class="feature-icon" style="cursor: pointer;">📊</div>
+  <h3>Zum Dashboard</h3>
+  <p>Öffne das neue Dashboard der EHE Community Plattform</p>
+</div>
+</div>
 </div>
 <div class="contact-section" id="kontaktbereich">
 <h2>Kontakt</h2>
@@ -1044,6 +1050,46 @@
     </div>
   </div>
 </div>
+
+<div class="welcome-overlay" id="dashboardConfirmOverlay" style="display: none;">
+  <div class="welcome-box">
+    <button class="welcome-close" onclick="closeDashboardPopup()">×</button>
+    <h2>🚀 Weiterleitung zum Dashboard</h2>
+    <p>Bist du dir wirklich sicher, dass du zum Dashboard der EHE Community weitergeleitet werden möchtest?</p>
+    <button id="confirmDashboardBtn" class="btn btn-primary" onclick="confirmDashboardRedirect()">Jetzt zum Dashboard</button>
+  </div>
+</div>
+
+<!-- Dashboard Weiterleitung -->
+<div class="welcome-overlay" id="dashboardConfirmOverlay" style="display: none;">
+  <div class="welcome-box">
+    <button class="welcome-close" onclick="closeDashboardPopup()">×</button>
+    <h2>🚀 Weiterleitung zum Dashboard</h2>
+    <p>Bist du dir wirklich sicher, dass du zum Dashboard der EHE Community weitergeleitet werden möchtest?</p>
+    <button id="confirmDashboardBtn" class="btn btn-primary" onclick="confirmDashboardRedirect()">Jetzt zum Dashboard</button>
+  </div>
+</div>
+
+<script>
+function showdashboardPopup() {
+  document.getElementById('dashboardConfirmOverlay').style.display = 'flex';
+}
+
+function closeDashboardPopup() {
+  document.getElementById('dashboardConfirmOverlay').style.display = 'none';
+}
+
+function confirmDashboardRedirect() {
+  const btn = document.getElementById('confirmDashboardBtn');
+  btn.disabled = true;
+  btn.textContent = 'Sie werden umgeleitet...';
+  setTimeout(() => {
+    window.location.href = "https://roxyboy179.github.io/ehecommunity_dashboard/";
+  }, 5000);
+}
+</script>
+
+
 
 <script>
 function showVerifyEmailOverlay(username, email) {
@@ -2514,7 +2560,7 @@ if (typeof updateUIForLoggedInUser_original === "undefined") {
   <div class="form-container" style="max-width: 400px;">
     <button class="form-close" onclick="hideDiscordPopup()">×</button>
     <h2 class="form-title">🎮 Unser Discord-Server</h2>
-    <iframe src="https://discord.com/widget?id=1273340696916394076&theme=dark"
+    <iframe src="https://discord.com/widget?id=1312453916922875936&theme=dark"
             width="100%" height="400"
             allowtransparency="true" frameborder="0"
             sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts">
@@ -3529,7 +3575,7 @@ function startDownloadSequence() {
 }
 
 // 🧮 Download-Logik
- (` function simulateDownload() {
+(` function simulateDownload() {
   const fileSizeMB = 0.945;
   const downloadSpeedMBps = 0.02;
   const intervalMs = 1000;
@@ -3629,6 +3675,7 @@ function showSuccessPopup() {
   `;
   document.body.appendChild(overlay);
 }}`
+
 
 
 </script>
