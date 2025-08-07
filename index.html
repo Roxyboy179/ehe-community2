@@ -1229,17 +1229,8 @@ function hideSecurityStatus() {
 <input class="form-input" id="loginPassword" required="" type="password"/>
 </div>
 <button class="form-submit" id="loginSubmit" type="submit">Anmelden</button>
-
-<div style="text-align: center; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-  <div style="margin-bottom: 10px; font-weight: 600; color: var(--text-secondary);">
-    Weitere Anmeldemöglichkeiten
-  </div>
-  <button class="btn btn-primary" type="button" onclick="loginWithDiscord()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;">
-    <img src="discord-icon.svg" alt="Discord" style="width: 20px; height: 20px;">
-    Mit Discord anmelden
-  </button>
-</div>
-
+<!-- Discord Login Button -->
+<button class="btn btn-primary" type="button" onclick="loginWithDiscord()" style="width: 100%; margin-top: 10px;">🔗 Mit Discord anmelden</button>
 
 </form>
 <div class="form-link">
@@ -1541,12 +1532,7 @@ function updateUIForLoggedInUser() {
         const userName = currentUser.user_metadata?.username || currentUser.email.split('@')[0];
         document.getElementById('userName').textContent = userName;
         document.getElementById('userAvatar').textContent = userName.charAt(0).toUpperCase();
-    
-  const isDiscordUser = currentUser.app_metadata?.provider === 'discord';
-  if (isDiscordUser) {
-    const changePwItem = document.querySelector('div.dropdown-item[onclick=\"showChangePasswordFormWithPassword()\"]');
-    if (changePwItem) changePwItem.remove();
-  }}
+    }
 }
 
 function updateUIForLoggedOutUser() {
@@ -1613,38 +1599,10 @@ function loginWithDiscord() {
         provider: 'discord',
         options: {
             redirectTo: 'https://ehecommunityweb.de'
-
         }
     });
 }
 
-function submitDiscordPassword() {
-  const newPassword = document.getElementById('newUserPassword').value.trim();
-  if (!newPassword || newPassword.length < 6) {
-    showNotification("Passwort muss mindestens 6 Zeichen haben.", "error");
-    return;
-  }
-
-  supabaseClient.auth.updateUser({ password: newPassword })
-    .then(({ error }) => {
-      if (error) {
-        console.error(error);
-        showNotification("Fehler beim Festlegen des Passworts", "error");
-      } else {
-        showNotification("Passwort wurde gespeichert!", "success");
-        document.getElementById('setPasswordOverlay').style.display = 'none';
-      }
-    });
-}
-
-// Discord: Nach Login Overlay anzeigen
-supabaseClient.auth.onAuthStateChange((event, session) => {
-  if (event === 'SIGNED_IN' && session?.user?.app_metadata?.provider === 'discord') {
-    setTimeout(() => {
-      document.getElementById('setPasswordOverlay').style.display = 'flex';
-    }, 1500);
-  }
-});
 
 
 function showBanPopup() {
@@ -1932,35 +1890,19 @@ function showEditProfileForm() {
   const username = currentUser.user_metadata?.username || "";
   const email = currentUser.email || "";
   const createdAt = currentUser.created_at;
-
   document.getElementById('editUsername').value = username;
   document.getElementById('editEmail').value = email;
-
   const themePref = localStorage.getItem('theme') || 'light';
   document.getElementById('editTheme').value = themePref;
 
-  const isDiscordUser = currentUser.app_metadata?.provider === 'discord';
-
-  // 🛑 E-Mail deaktivieren, wenn Discord
-  document.getElementById('editEmail').disabled = isDiscordUser;
-
-  // Optional Hinweis einblenden
-  if (isDiscordUser) {
-    let hint = document.getElementById('discordHint');
-    if (!hint) {
-      hint = document.createElement('div');
-      hint.id = 'discordHint';
-      hint.innerHTML = `<small style="color: var(--text-secondary); display: block; margin-top: 8px;">
-        Deine E-Mail & Passwort sind über Discord geschützt und können nicht geändert werden.
-      </small>`;
-      document.getElementById('editEmail').parentElement.appendChild(hint);
-    }
-  }
-
   const sinceDate = new Date(createdAt);
   const options = {
-    weekday: 'long', year: 'numeric', month: 'long',
-    day: 'numeric', hour: '2-digit', minute: '2-digit'
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
   };
   const formatted = sinceDate.toLocaleString('de-DE', options);
   let seitDiv = document.getElementById('mitgliedSeit');
@@ -3594,6 +3536,7 @@ document.addEventListener("keydown", function (e) {
   if (e.key === "Escape") hideBadgePopup();
 });
 </script>
+
 
 </script>
 </script>
