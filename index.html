@@ -1229,8 +1229,17 @@ function hideSecurityStatus() {
 <input class="form-input" id="loginPassword" required="" type="password"/>
 </div>
 <button class="form-submit" id="loginSubmit" type="submit">Anmelden</button>
-<!-- Discord Login Button -->
-<button class="btn btn-primary" type="button" onclick="loginWithDiscord()" style="width: 100%; margin-top: 10px;">🔗 Mit Discord anmelden</button>
+
+<div style="text-align: center; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+  <div style="margin-bottom: 10px; font-weight: 600; color: var(--text-secondary);">
+    Weitere Anmeldemöglichkeiten
+  </div>
+  <button class="btn btn-primary" type="button" onclick="loginWithDiscord()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;">
+    <img src="discord-icon.svg" alt="Discord" style="width: 20px; height: 20px;">
+    Mit Discord anmelden
+  </button>
+</div>
+
 
 </form>
 <div class="form-link">
@@ -3536,7 +3545,6 @@ document.addEventListener("keydown", function (e) {
   if (e.key === "Escape") hideBadgePopup();
 });
 </script>
-
 
 </script>
 </script>
