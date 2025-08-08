@@ -1233,6 +1233,9 @@ function hideSecurityStatus() {
 <div style="text-align: center; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
   <div style="margin-bottom: 10px; font-weight: 600; color: var(--text-secondary);">
     Weitere Anmeldemöglichkeiten
+  <br>
+  <button class="btn btn-secondary" type="button" style="width: 100%; margin-top: 10px;" onclick="showWarnHinweis()">Weitere Anmeldemöglichkeiten anzeigen</button>
+
   </div>
   <button class="btn btn-primary" type="button" onclick="loginWithDiscord()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;">
     <img src="discord-icon.svg" alt="Discord" style="width: 20px; height: 20px;">
@@ -3328,6 +3331,47 @@ function updateSupportStatusLive() {
     <button class="btn btn-primary" onclick="document.getElementById('discordBlockedOverlay').style.display='none'">Verstanden</button>
   </div>
 </div>
+
+
+<!-- Warnhinweis Overlay -->
+<div class="welcome-overlay" id="warnHinweisOverlay" style="display:none;">
+  <div class="welcome-box">
+    <button class="welcome-close" onclick="document.getElementById('warnHinweisOverlay').style.display='none'">×</button>
+    <h2>⚠️ Anmelde Hinweis</h2>
+    <p>Wenn Sie sich mit Discord, Spotify oder Google anmelden, können Sie kein Passwort oder Profil bearbeiten oder ändern, da EHE Community Webseite Studio diese Funktion eingeschränkt hat, um Anmeldeprobleme zu vermeiden.</p>
+    <button class="btn btn-primary" onclick="openWeitereMethoden()">Hinweis gelesen</button>
+  </div>
+</div>
+
+<!-- Weitere Anmeldemethoden Overlay -->
+<div class="welcome-overlay" id="weitereMethodenOverlay" style="display:none;">
+  <div class="welcome-box">
+    <button class="welcome-close" onclick="document.getElementById('weitereMethodenOverlay').style.display='none'">×</button>
+    <h2>🔑 Weitere Anmeldemöglichkeiten</h2>
+    <hr style="margin:15px 0; border: none; border-top: 1px solid var(--border-color);">
+    <button class="btn btn-primary" style="width:100%; display:flex; align-items:center; gap:10px; justify-content:center;" disabled>
+      <img src="spotify-icon.png" alt="Spotify" style="width:20px; height:20px;">
+      Mit Spotify anmelden
+    </button>
+    <hr style="margin:15px 0; border: none; border-top: 1px solid var(--border-color);">
+    <button class="btn btn-primary" style="width:100%; display:flex; align-items:center; gap:10px; justify-content:center;" disabled>
+      <img src="google-icon.png" alt="Google" style="width:20px; height:20px;">
+      Mit Google anmelden
+    </button>
+    <hr style="margin:15px 0; border: none; border-top: 1px solid var(--border-color);">
+    <p style="font-size:12px; color:var(--text-secondary); margin-top:15px;">ℹ️ Diese Anmeldemethoden sind derzeit nicht verfügbar.</p>
+  </div>
+</div>
+
+<script>
+function showWarnHinweis() {
+  document.getElementById('warnHinweisOverlay').style.display = 'flex';
+}
+function openWeitereMethoden() {
+  document.getElementById('warnHinweisOverlay').style.display = 'none';
+  document.getElementById('weitereMethodenOverlay').style.display = 'flex';
+}
+</script>
 
 </body>
 <script>
