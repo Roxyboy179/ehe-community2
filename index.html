@@ -3346,11 +3346,11 @@ function updateSupportStatusLive() {
     <button class="welcome-close" onclick="document.getElementById('weitereMethodenOverlay').style.display='none'">×</button>
     <h2>🔑 Weitere Anmeldemöglichkeiten</h2>
    
-    <hr style="margin:15px 0; border: none; border-top: 1px solid var(--border-color);">
-   <button class="btn btn-primary" type="button" onclick="loginwithSpotify()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;">
-    <img src="spotify-icon.png" alt="Spotify" style="width: 20px; height: 20px;">
-    Mit Spotify anmelden
-</button>
+   hr style="margin:15px 0; border: none; border-top: 1px solid var(--border-color);">
+    <button class="btn btn-primary" style="width:100%; display:flex; align-items:center; gap:10px; justify-content:center;" disabled>
+      <img src="spotify-icon.png" alt="spotify" style="width:20px; height:20px;">
+      Mit Spotify anmelden
+    </button>
 
 
     <hr style="margin:15px 0; border: none; border-top: 1px solid var(--border-color);">
@@ -3359,7 +3359,7 @@ function updateSupportStatusLive() {
       Mit Google anmelden
     </button>
     <hr style="margin:15px 0; border: none; border-top: 1px solid var(--border-color);">
-    <p style="font-size:12px; color:var(--text-secondary); margin-top:15px;">ℹ️ Die Google Anmeldemethode ist derzeit nicht verfügbar.</p>
+    <p style="font-size:12px; color:var(--text-secondary); margin-top:15px;">ℹ️ Die Google und Spotify Anmeldemethode ist derzeit nicht verfügbar.</p>
   </div>
 </div>
 
@@ -3371,38 +3371,6 @@ function openWeitereMethoden() {
   document.getElementById('warnHinweisOverlay').style.display = 'none';
   document.getElementById('weitereMethodenOverlay').style.display = 'flex';
 }
-
-function loginWithSpotify() {
-    supabaseClient.auth.signInWithOAuth({
-        provider: 'spotify',
-        options: {
-            scopes: 'user-read-email',
-            redirectTo: 'https://ehecommunityweb.de' // oder lokale URL zum Testen
-        }
-    });
-}
-
-
-// Auth-State-Listener erweitern:
-supabaseClient.auth.onAuthStateChange((event, session) => {
-  if (event === 'SIGNED_IN' && session) {
-    currentUser = session.user;
-
-    // Falls vom Spotify-Login, automatisch Benutzernamen setzen
-    if (session.user.app_metadata?.provider === 'spotify') {
-      const spotifyName = session.user.user_metadata?.full_name 
-                       || session.user.user_metadata?.display_name 
-                       || session.user.email.split('@')[0];
-      currentUser.user_metadata.username = spotifyName;
-    }
-
-    updateUIForLoggedInUser();
-    checkUserSecurity(currentUser);
-    hideAllForms();
-    showNotification('Erfolgreich angemeldet!', 'success');
-  }
-  // ... restlicher Code bleibt
-});
 
 function closeLoginReminder(button) {
   const popup = button.closest('.welcome-overlay');
