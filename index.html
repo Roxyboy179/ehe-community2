@@ -1087,11 +1087,7 @@ function confirmDashboardRedirect() {
     window.location.href = "https://roxyboy179.github.io/ehecommunity_dashboard/";
   }, 5000);
 }
-</script>
 
-
-
-<script>
 function showVerifyEmailOverlay(username, email) {
   document.getElementById('verifyUserName').textContent = username;
   document.getElementById('verifyEmailTarget').textContent = email;
@@ -1507,6 +1503,7 @@ if (!currentUser) {
             if (event === 'SIGNED_IN' && session) {
                 currentUser = session.user;
                 updateUIForLoggedInUser();
+    showLinkAccountButtons();
                 checkUserSecurity(currentUser);
                 hideAllForms();
                 showNotification('Erfolgreich angemeldet!', 'success');
@@ -3349,17 +3346,19 @@ function updateSupportStatusLive() {
     <button class="welcome-close" onclick="document.getElementById('weitereMethodenOverlay').style.display='none'">×</button>
     <h2>🔑 Weitere Anmeldemöglichkeiten</h2>
     <hr style="margin:15px 0; border: none; border-top: 1px solid var(--border-color);">
-    <button class="btn btn-primary" style="width:100%; display:flex; align-items:center; gap:10px; justify-content:center;" disabled>
-      <img src="spotify-icon.png" alt="Spotify" style="width:20px; height:20px;">
-      Mit Spotify anmelden
-    </button>
+    
+<button class="btn btn-primary" type="button" onclick="loginwithSpotify()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;">
+    <img src="spotify-icon.png" alt="Spotify" style="width: 20px; height: 20px;">
+    Mit Spotify anmelden
+</button>
+
     <hr style="margin:15px 0; border: none; border-top: 1px solid var(--border-color);">
     <button class="btn btn-primary" style="width:100%; display:flex; align-items:center; gap:10px; justify-content:center;" disabled>
       <img src="google-icon.png" alt="Google" style="width:20px; height:20px;">
       Mit Google anmelden
     </button>
     <hr style="margin:15px 0; border: none; border-top: 1px solid var(--border-color);">
-    <p style="font-size:12px; color:var(--text-secondary); margin-top:15px;">ℹ️ Diese Anmeldemethoden sind derzeit nicht verfügbar.</p>
+    <p style="font-size:12px; color:var(--text-secondary); margin-top:15px;">ℹ️ Die Google Anmeldemethode ist derzeit nicht verfügbar.</p>
   </div>
 </div>
 
@@ -3371,7 +3370,47 @@ function openWeitereMethoden() {
   document.getElementById('warnHinweisOverlay').style.display = 'none';
   document.getElementById('weitereMethodenOverlay').style.display = 'flex';
 }
+
+function loginwithSpotify() {
+    supabaseClient.auth.signInWithOAuth({
+        provider: 'spotify',
+        options: {
+            redirectTo: 'https://ehecommunityweb.de'
+        }
+    });
+}
+function loginWithSpotify() {
+  supabaseClient.auth.signInWithOAuth({
+    provider: 'spotify',
+    options: {
+      redirectTo: 'https://ehecommunityweb.de'
+    }
+  });
+}
+
+// Auth-State-Listener erweitern:
+supabaseClient.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' && session) {
+    currentUser = session.user;
+
+    // Falls vom Spotify-Login, automatisch Benutzernamen setzen
+    if (session.user.app_metadata?.provider === 'spotify') {
+      const spotifyName = session.user.user_metadata?.full_name 
+                       || session.user.user_metadata?.display_name 
+                       || session.user.email.split('@')[0];
+      currentUser.user_metadata.username = spotifyName;
+    }
+
+    updateUIForLoggedInUser();
+    checkUserSecurity(currentUser);
+    hideAllForms();
+    showNotification('Erfolgreich angemeldet!', 'success');
+  }
+  // ... restlicher Code bleibt
+});
+
 </script>
+
 
 </body>
 <script>
