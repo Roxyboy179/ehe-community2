@@ -1088,90 +1088,6 @@ function confirmDashboardRedirect() {
   }, 5000);
 }
 
-async function linkDiscordAccount() {
-  if (!currentUser) {
-    showNotification("Bitte zuerst anmelden.", "error");
-    return;
-  }
-  try {
-    await supabaseClient.auth.linkIdentity({
-      provider: 'discord',
-      options: {
-        redirectTo: 'https://ehecommunityweb.de'
-      }
-    });
-  } catch (err) {
-    console.error(err);
-    showNotification("Discord-Verknüpfung fehlgeschlagen.", "error");
-  }
-}
-
-async function linkSpotifyAccount() {
-  if (!currentUser) {
-    showNotification("Bitte zuerst anmelden.", "error");
-    return;
-  }
-  try {
-    await supabaseClient.auth.linkIdentity({
-      provider: 'spotify',
-      options: {
-        redirectTo: 'https://ehecommunityweb.de'
-      }
-    });
-  } catch (err) {
-    console.error(err);
-    showNotification("Spotify-Verknüpfung fehlgeschlagen.", "error");
-  }
-}
-
-
-async function unlinkDiscordAccount() {
-  if (!currentUser) {
-    showNotification("Bitte zuerst anmelden.", "error");
-    return;
-  }
-  try {
-    const discordIdentity = currentUser.identities.find(id => id.provider === 'discord');
-    if (!discordIdentity) {
-      showNotification("Discord ist nicht verknüpft.", "warning");
-      return;
-    }
-    await supabaseClient.auth.unlinkIdentity({ identity_id: discordIdentity.id });
-    // Identitäten im local currentUser aktualisieren
-    currentUser.identities = currentUser.identities.filter(id => id.id !== discordIdentity.id);
-    showNotification("Discord-Verknüpfung entfernt.", "success");
-  } catch (err) {
-    console.error(err);
-    showNotification("Entfernen fehlgeschlagen.", "error");
-  }
-}
-
-async function unlinkSpotifyAccount() {
-  if (!currentUser) {
-    showNotification("Bitte zuerst anmelden.", "error");
-    return;
-  }
-  try {
-    const spotifyIdentity = currentUser.identities.find(id => id.provider === 'spotify');
-    if (!spotifyIdentity) {
-      showNotification("Spotify ist nicht verknüpft.", "warning");
-      return;
-    }
-    await supabaseClient.auth.unlinkIdentity({ identity_id: spotifyIdentity.id });
-    // Identitäten im local currentUser aktualisieren
-    currentUser.identities = currentUser.identities.filter(id => id.id !== spotifyIdentity.id);
-    showNotification("Spotify-Verknüpfung entfernt.", "success");
-  } catch (err) {
-    console.error(err);
-    showNotification("Entfernen fehlgeschlagen.", "error");
-  }
-}
-
-</script>
-
-
-
-<script>
 function showVerifyEmailOverlay(username, email) {
   document.getElementById('verifyUserName').textContent = username;
   document.getElementById('verifyEmailTarget').textContent = email;
@@ -3431,10 +3347,11 @@ function updateSupportStatusLive() {
     <h2>🔑 Weitere Anmeldemöglichkeiten</h2>
    
     <hr style="margin:15px 0; border: none; border-top: 1px solid var(--border-color);">
-    <button class="btn btn-primary" style="width:100%; display:flex; align-items:center; gap:10px; justify-content:center;" disabled>
-      <img src="spotify-icon.png" alt="spotify" style="width:20px; height:20px;">
-      Mit Spotify anmelden
-    </button>
+   <button class="btn btn-primary" type="button" onclick="loginwithSpotify()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;">
+    <img src="spotify-icon.png" alt="Spotify" style="width: 20px; height: 20px;">
+    Mit Spotify anmelden
+</button>
+
 
     <hr style="margin:15px 0; border: none; border-top: 1px solid var(--border-color);">
     <button class="btn btn-primary" style="width:100%; display:flex; align-items:center; gap:10px; justify-content:center;" disabled>
@@ -3442,7 +3359,7 @@ function updateSupportStatusLive() {
       Mit Google anmelden
     </button>
     <hr style="margin:15px 0; border: none; border-top: 1px solid var(--border-color);">
-    <p style="font-size:12px; color:var(--text-secondary); margin-top:15px;">ℹ️ Die Google, Spotify Anmeldemethoden ist derzeit nicht verfügbar.</p>
+    <p style="font-size:12px; color:var(--text-secondary); margin-top:15px;">ℹ️ Die Google Anmeldemethode ist derzeit nicht verfügbar.</p>
   </div>
 </div>
 
@@ -3455,75 +3372,38 @@ function openWeitereMethoden() {
   document.getElementById('weitereMethodenOverlay').style.display = 'flex';
 }
 
-</script>
-<div id="linkAccountsSection" style="margin-top:20px; display:none;">
-  <div>
-    <button id="discordLinkButton" class="btn btn-primary" onclick="toggleDiscordLink()">🔗 Discord verknüpfen</button>
-  </div>
-  <div style="margin-top:10px;">
-    <button id="spotifyLinkButton" class="btn btn-primary" onclick="toggleSpotifyLink()">🔗 Spotify verknüpfen</button>
-  </div>
-</div>
-<script>
-async function toggleDiscordLink() {
-  const discordIdentity = currentUser?.identities?.find(id => id.provider === 'discord');
-  if (discordIdentity) {
-    await unlinkDiscordAccount();
-  } else {
-    await linkDiscordAccount();
-  }
-  updateLinkButtons();
+function loginWithSpotify() {
+    supabaseClient.auth.signInWithOAuth({
+        provider: 'spotify',
+        options: {
+            scopes: 'user-read-email',
+            redirectTo: 'https://ehecommunityweb.de' // oder lokale URL zum Testen
+        }
+    });
 }
 
-async function toggleSpotifyLink() {
-  const spotifyIdentity = currentUser?.identities?.find(id => id.provider === 'spotify');
-  if (spotifyIdentity) {
-    await unlinkSpotifyAccount();
-  } else {
-    await linkSpotifyAccount();
+
+// Auth-State-Listener erweitern:
+supabaseClient.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' && session) {
+    currentUser = session.user;
+
+    // Falls vom Spotify-Login, automatisch Benutzernamen setzen
+    if (session.user.app_metadata?.provider === 'spotify') {
+      const spotifyName = session.user.user_metadata?.full_name 
+                       || session.user.user_metadata?.display_name 
+                       || session.user.email.split('@')[0];
+      currentUser.user_metadata.username = spotifyName;
+    }
+
+    updateUIForLoggedInUser();
+    checkUserSecurity(currentUser);
+    hideAllForms();
+    showNotification('Erfolgreich angemeldet!', 'success');
   }
-  updateLinkButtons();
-}
+  // ... restlicher Code bleibt
+});
 
-function updateLinkButtons() {
-  const discordIdentity = currentUser?.identities?.find(id => id.provider === 'discord');
-  const spotifyIdentity = currentUser?.identities?.find(id => id.provider === 'spotify');
-
-  const discordBtn = document.getElementById('discordLinkButton');
-  const spotifyBtn = document.getElementById('spotifyLinkButton');
-
-  if (discordIdentity) {
-    discordBtn.textContent = "❌ Discord Verbindung entfernen";
-    discordBtn.classList.remove("btn-primary");
-    discordBtn.classList.add("btn-danger");
-  } else {
-    discordBtn.textContent = "🔗 Discord verknüpfen";
-    discordBtn.classList.remove("btn-danger");
-    discordBtn.classList.add("btn-primary");
-  }
-
-  if (spotifyIdentity) {
-    spotifyBtn.textContent = "❌ Spotify Verbindung entfernen";
-    spotifyBtn.classList.remove("btn-primary");
-    spotifyBtn.classList.add("btn-danger");
-  } else {
-    spotifyBtn.textContent = "🔗 Spotify verknüpfen";
-    spotifyBtn.classList.remove("btn-danger");
-    spotifyBtn.classList.add("btn-primary");
-  }
-}
-
-function showLinkAccountButtons() {
-  if (currentUser) {
-    document.getElementById('linkAccountsSection').style.display = 'block';
-    updateLinkButtons();
-  }
-}
-</script>
-
-
-</body>
-<script>
 function closeLoginReminder(button) {
   const popup = button.closest('.welcome-overlay');
   popup.remove();
