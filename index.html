@@ -3383,10 +3383,12 @@ function loginWithSpotify() {
   supabaseClient.auth.signInWithOAuth({
     provider: 'spotify',
     options: {
+      scopes: 'user-read-email',
       redirectTo: 'https://ehecommunityweb.de'
     }
   });
 }
+
 
 // Auth-State-Listener erweitern:
 supabaseClient.auth.onAuthStateChange((event, session) => {
