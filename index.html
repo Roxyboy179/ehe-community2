@@ -1088,6 +1088,90 @@ function confirmDashboardRedirect() {
   }, 5000);
 }
 
+async function linkDiscordAccount() {
+  if (!currentUser) {
+    showNotification("Bitte zuerst anmelden.", "error");
+    return;
+  }
+  try {
+    await supabaseClient.auth.linkIdentity({
+      provider: 'discord',
+      options: {
+        redirectTo: 'https://ehecommunityweb.de'
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    showNotification("Discord-Verknüpfung fehlgeschlagen.", "error");
+  }
+}
+
+async function linkSpotifyAccount() {
+  if (!currentUser) {
+    showNotification("Bitte zuerst anmelden.", "error");
+    return;
+  }
+  try {
+    await supabaseClient.auth.linkIdentity({
+      provider: 'spotify',
+      options: {
+        redirectTo: 'https://ehecommunityweb.de'
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    showNotification("Spotify-Verknüpfung fehlgeschlagen.", "error");
+  }
+}
+
+
+async function unlinkDiscordAccount() {
+  if (!currentUser) {
+    showNotification("Bitte zuerst anmelden.", "error");
+    return;
+  }
+  try {
+    const discordIdentity = currentUser.identities.find(id => id.provider === 'discord');
+    if (!discordIdentity) {
+      showNotification("Discord ist nicht verknüpft.", "warning");
+      return;
+    }
+    await supabaseClient.auth.unlinkIdentity({ identity_id: discordIdentity.id });
+    // Identitäten im local currentUser aktualisieren
+    currentUser.identities = currentUser.identities.filter(id => id.id !== discordIdentity.id);
+    showNotification("Discord-Verknüpfung entfernt.", "success");
+  } catch (err) {
+    console.error(err);
+    showNotification("Entfernen fehlgeschlagen.", "error");
+  }
+}
+
+async function unlinkSpotifyAccount() {
+  if (!currentUser) {
+    showNotification("Bitte zuerst anmelden.", "error");
+    return;
+  }
+  try {
+    const spotifyIdentity = currentUser.identities.find(id => id.provider === 'spotify');
+    if (!spotifyIdentity) {
+      showNotification("Spotify ist nicht verknüpft.", "warning");
+      return;
+    }
+    await supabaseClient.auth.unlinkIdentity({ identity_id: spotifyIdentity.id });
+    // Identitäten im local currentUser aktualisieren
+    currentUser.identities = currentUser.identities.filter(id => id.id !== spotifyIdentity.id);
+    showNotification("Spotify-Verknüpfung entfernt.", "success");
+  } catch (err) {
+    console.error(err);
+    showNotification("Entfernen fehlgeschlagen.", "error");
+  }
+}
+
+</script>
+
+
+
+<script>
 function showVerifyEmailOverlay(username, email) {
   document.getElementById('verifyUserName').textContent = username;
   document.getElementById('verifyEmailTarget').textContent = email;
@@ -3372,13 +3456,23 @@ function openWeitereMethoden() {
 }
 
 function loginWithSpotify() {
-  supabaseClient.auth.signInWithOAuth({
-    provider: 'spotify',
-    options: {
-      scopes: 'user-read-email',
-      redirectTo: 'https://ehecommunityweb.de'
-    }
-  });
+    supabaseClient.auth.signInWithOAuth({
+        provider: 'spotify',
+        options: {
+            scopes: 'user-read-email',
+            redirectTo: 'https://ehecommunityweb.de' // oder lokale URL zum Testen
+        }
+    });
+}
+
+function loginWithSpotify() {
+    supabaseClient.auth.signInWithOAuth({
+        provider: 'spotify',
+        options: {
+            scopes: 'user-read-email',
+            redirectTo: 'https://ehecommunityweb.de' // oder lokale URL zum Testen
+        }
+    });
 }
 
 
@@ -3403,6 +3497,73 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
   // ... restlicher Code bleibt
 });
 
+</script>
+
+
+
+<div id="linkAccountsSection" style="margin-top:20px; display:none;">
+  <div>
+    <button id="discordLinkButton" class="btn btn-primary" onclick="toggleDiscordLink()">🔗 Discord verknüpfen</button>
+  </div>
+  <div style="margin-top:10px;">
+    <button id="spotifyLinkButton" class="btn btn-primary" onclick="toggleSpotifyLink()">🔗 Spotify verknüpfen</button>
+  </div>
+</div>
+<script>
+async function toggleDiscordLink() {
+  const discordIdentity = currentUser?.identities?.find(id => id.provider === 'discord');
+  if (discordIdentity) {
+    await unlinkDiscordAccount();
+  } else {
+    await linkDiscordAccount();
+  }
+  updateLinkButtons();
+}
+
+async function toggleSpotifyLink() {
+  const spotifyIdentity = currentUser?.identities?.find(id => id.provider === 'spotify');
+  if (spotifyIdentity) {
+    await unlinkSpotifyAccount();
+  } else {
+    await linkSpotifyAccount();
+  }
+  updateLinkButtons();
+}
+
+function updateLinkButtons() {
+  const discordIdentity = currentUser?.identities?.find(id => id.provider === 'discord');
+  const spotifyIdentity = currentUser?.identities?.find(id => id.provider === 'spotify');
+
+  const discordBtn = document.getElementById('discordLinkButton');
+  const spotifyBtn = document.getElementById('spotifyLinkButton');
+
+  if (discordIdentity) {
+    discordBtn.textContent = "❌ Discord Verbindung entfernen";
+    discordBtn.classList.remove("btn-primary");
+    discordBtn.classList.add("btn-danger");
+  } else {
+    discordBtn.textContent = "🔗 Discord verknüpfen";
+    discordBtn.classList.remove("btn-danger");
+    discordBtn.classList.add("btn-primary");
+  }
+
+  if (spotifyIdentity) {
+    spotifyBtn.textContent = "❌ Spotify Verbindung entfernen";
+    spotifyBtn.classList.remove("btn-primary");
+    spotifyBtn.classList.add("btn-danger");
+  } else {
+    spotifyBtn.textContent = "🔗 Spotify verknüpfen";
+    spotifyBtn.classList.remove("btn-danger");
+    spotifyBtn.classList.add("btn-primary");
+  }
+}
+
+function showLinkAccountButtons() {
+  if (currentUser) {
+    document.getElementById('linkAccountsSection').style.display = 'block';
+    updateLinkButtons();
+  }
+}
 </script>
 
 
