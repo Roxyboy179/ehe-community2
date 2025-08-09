@@ -3371,14 +3371,6 @@ function openWeitereMethoden() {
   document.getElementById('weitereMethodenOverlay').style.display = 'flex';
 }
 
-function loginwithSpotify() {
-    supabaseClient.auth.signInWithOAuth({
-        provider: 'spotify',
-        options: {
-            redirectTo: 'https://ehecommunityweb.de'
-        }
-    });
-}
 function loginWithSpotify() {
   supabaseClient.auth.signInWithOAuth({
     provider: 'spotify',
