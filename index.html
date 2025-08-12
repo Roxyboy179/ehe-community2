@@ -908,6 +908,21 @@
 }
 
 
+
+.version-label {
+    display: inline-block;
+    margin-left: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    opacity: 0.8;
+    vertical-align: middle;
+}
+[data-theme="dark"] .version-label {
+    color: #e2e8f0;
+    opacity: 0.7;
+}
+
 </style>
 <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet"/>
 
@@ -932,7 +947,7 @@
 <button class="welcome-close" onclick="closeWelcome()">×</button>
 <h2>👋 Willkommen bei der EHE Community!</h2>
 <p>Tritt unserem Discord bei und sei Teil unserer wachsenden Community.</p>
-<a class="btn btn-primary" href="https://discord.gg/QjnJJWK8U8" target="_blank">Zum Discord</a>
+<a class="btn btn-primary" href="https://discord.gg/hnpV5QwFZR" target="_blank">Zum Discord</a>
 </div>
 </div>
 <div class="loading-screen" id="loadingScreen">
@@ -956,6 +971,7 @@
 <div class="auth-buttons" id="authButtons">
 <button class="btn btn-secondary" onclick="showLoginForm()">Anmelden</button>
 <button class="btn btn-primary" onclick="showRegisterForm()">Registrieren</button>
+<div class="version-label">v23.7</div>
 </div>
 <div class="user-profile" id="userProfile" style="display: none;">
 <button id="activityButton" style="background: transparent; border: none; font-size: 20px; cursor: pointer;" title="Aktivitätsübersicht">📊</button>
@@ -1305,17 +1321,23 @@ function initParticles() {
     tsParticles.load("particlesCanvas", {
         fullScreen: { enable: false },
         particles: {
-            number: { value: 60 },
-            color: { value: "#ffffff" },
+            number: { value: 80 },
+            color: { value: ["#ff7eb3", "#ff758c", "#42a5f5", "#7e57c2"] },
             shape: { type: "circle" },
-            opacity: { value: 0.5 },
-            size: { value: 3 },
-            move: { enable: true, speed: 1 },
+            opacity: {
+                value: 0.6,
+                anim: { enable: true, speed: 0.8, opacity_min: 0.3, sync: false }
+            },
+            size: {
+                value: { min: 2, max: 5 },
+                anim: { enable: true, speed: 3, size_min: 1, sync: false }
+            },
+            move: { enable: true, speed: 0.8, direction: "none", random: true, straight: false, outModes: "out" },
             links: {
                 enable: true,
                 distance: 150,
                 color: "#ffffff",
-                opacity: 0.4,
+                opacity: 0.3,
                 width: 1
             }
         },
@@ -1323,33 +1345,7 @@ function initParticles() {
             color: "transparent"
         }
     });
-}
-</script>
-<script>
-// Partikel initialisieren
-function initParticles() {
-    tsParticles.load("particlesCanvas", {
-        fullScreen: { enable: false },
-        particles: {
-            number: { value: 60 },
-            color: { value: "#ffffff" },
-            shape: { type: "circle" },
-            opacity: { value: 0.5 },
-            size: { value: 3 },
-            move: { enable: true, speed: 1 },
-            links: {
-                enable: true,
-                distance: 150,
-                color: "#ffffff",
-                opacity: 0.4,
-                width: 1
-            }
-        },
-        background: {
-            color: "transparent"
-        }
-    });
-}
+};
 
 // Fehlende Funktionen
 
@@ -1454,9 +1450,10 @@ const supabaseUrl = 'https://avojqdzjszauigitnuiy.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2b2pxZHpqc3phdWlnaXRudWl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4MTAzNTgsImV4cCI6MjA2NTM4NjM1OH0.1HessC_Wo4D7iIscEZieKBzL0hXteUUq6Dot5oQphvw';
 const supabaseClient = createClient(supabaseUrl, supabaseKey, {
   auth: {
-    persistSession: false
+    persistSession: true
   }
 });
+
 
 // Global Variables
 let currentUser = null;
@@ -1503,7 +1500,6 @@ if (!currentUser) {
             if (event === 'SIGNED_IN' && session) {
                 currentUser = session.user;
                 updateUIForLoggedInUser();
-    showLinkAccountButtons();
                 checkUserSecurity(currentUser);
                 hideAllForms();
                 showNotification('Erfolgreich angemeldet!', 'success');
