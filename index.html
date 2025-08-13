@@ -6,7 +6,7 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 
 <meta name="author" content="EHE Community Webseite Studio">
-<meta name="description" content="Offizielle Beta-Plattform der EHE Community – entwickelt von EHE Community Webseite Studio.">
+<meta name="description" content="Offizielle Beta-Plattform der EHE Community – entwickelt von EHE Community Webseite Studio. Aktuelle Version: 23.7.29">
 <meta name="theme-color" content="#667eea">
 
 <title>EHE Community Web - Beta</title>
@@ -971,7 +971,7 @@
 <div class="auth-buttons" id="authButtons">
 <button class="btn btn-secondary" onclick="showLoginForm()">Anmelden</button>
 <button class="btn btn-primary" onclick="showRegisterForm()">Registrieren</button>
-<div class="version-label">v23.7</div>
+<div class="version-label">v23.7.29</div>
 </div>
 <div class="user-profile" id="userProfile" style="display: none;">
 <button id="activityButton" style="background: transparent; border: none; font-size: 20px; cursor: pointer;" title="Aktivitätsübersicht">📊</button>
@@ -1495,7 +1495,19 @@ if (!currentUser) {
     }, 3500);
         }
 
-        // Auth state listener
+        
+// Auto-Login beim Seitenstart prüfen
+const autoLoginSetting = localStorage.getItem("autoLogin");
+if (autoLoginSetting !== "false") {
+  supabaseClient.auth.getSession().then(({ data }) => {
+    if (data.session) {
+      currentUser = data.session.user;
+      updateUIForLoggedInUser();
+    }
+  });
+}
+
+// Auth state listener
         supabaseClient.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN' && session) {
                 currentUser = session.user;
@@ -1854,6 +1866,16 @@ document.addEventListener('click', function () {
 </div>
 
 <div class="form-group">
+  <label class="form-label" for="editTheme">
+  </label>
+</div>
+<div class="form-group">
+  <label class="form-label" for="editAutoLogin">
+    <input type="checkbox" id="editAutoLogin" style="margin-right: 8px;">
+    Automatisch anmelden
+  </label>
+</div>
+<div class="form-group">
   <label class="form-label" for="editTheme">Design</label>
   <select class="form-input" id="editTheme">
     <option value="light">Hell</option>
@@ -1914,6 +1936,9 @@ document.getElementById('hamburger').addEventListener('click', function () {
 </script>
 <script>
 function showEditProfileForm() {
+  // Auto-Login Status laden (Standard: true)
+  const autoLoginPref = localStorage.getItem("autoLogin");
+  document.getElementById("editAutoLogin").checked = autoLoginPref !== "false";
   const username = currentUser.user_metadata?.username || "";
   const email = currentUser.email || "";
   const createdAt = currentUser.created_at;
@@ -1964,15 +1989,88 @@ document.getElementById('activityButton').addEventListener('click', function () 
 });
 
 </script>
+
 <div class="welcome-overlay" id="verifyEmailOverlay" style="display: none;">
-<div class="welcome-box">
-<button class="welcome-close" onclick="closeVerifyEmail()">×</button>
-<h2>📧 Hallo <span id="verifyUserName"></span>,</h2>
-<p>Haben Sie schon Ihre E-Mail-Adresse verifiziert?<br/>
-    Wir haben eine Nachricht an <strong id="verifyEmailTarget"></strong> gesendet.</p>
-<button class="btn btn-primary" onclick="closeVerifyEmail()">Verstanden</button>
+  <div class="welcome-box" id="verifyEmailContent">
+    <button class="welcome-close" onclick="closeVerifyEmail()">×</button>
+    <h2>📧 Hallo <span id="verifyUserName"></span>,</h2>
+    <p>Wir haben Ihnen eine E-Mail an <strong id="verifyEmailTarget"></strong> gesendet.<br>
+       Bitte bestätigen Sie Ihre Registrierung.</p>
+    <button class="btn btn-primary" onclick="switchToCodeEntry()">Code eingeben</button>
+  </div>
 </div>
-</div>
+
+
+<script>
+
+let pendingVerifyEmail = null;
+
+function showVerifyEmailOverlay(username, email) {
+  document.getElementById('verifyUserName').textContent = username;
+  document.getElementById('verifyEmailTarget').textContent = email;
+  pendingVerifyEmail = email;
+  document.getElementById('verifyEmailOverlay').style.display = 'flex';
+}
+
+function closeVerifyEmail() {
+  document.getElementById('verifyEmailOverlay').style.display = 'none';
+  pendingVerifyEmail = null;
+}
+
+function switchToCodeEntry() {
+  // Inhalt im gleichen Overlay austauschen
+  const content = document.getElementById('verifyEmailContent');
+  content.innerHTML = `
+    <button class="welcome-close" onclick="closeVerifyEmail()">×</button>
+    <h2>🔑 Code eingeben</h2>
+    <p>Wir haben erneut einen 6-stelligen Code an <strong>${pendingVerifyEmail}</strong> gesendet.<br>
+       Bitte geben Sie den Code hier ein:</p>
+    <input id="verifyOtpCode" class="form-input" type="text" maxlength="6"
+           placeholder="Code Eingeben" style="text-align:center; font-size:20px; letter-spacing:5px; margin-top:15px;"/>
+    <button class="btn btn-primary" style="margin-top:15px;" onclick="submitVerificationCode()">Absenden</button>
+  `;
+
+  // Optional: hier nochmal Supabase triggern, um neuen Code zu senden
+  supabaseClient.auth.resend({
+    type: 'signup',
+    email: pendingVerifyEmail
+  }).catch(err => console.error("Fehler beim erneuten Senden des Codes:", err));
+}
+
+async function submitVerificationCode() {
+  const codeInput = document.getElementById('verifyOtpCode');
+  const code = codeInput.value.trim();
+
+  if (code.length !== 6) {
+    showNotification("Bitte 6-stelligen Code eingeben", "error");
+    return;
+  }
+
+  try {
+    const { data, error } = await supabaseClient.auth.verifyOtp({
+      email: pendingVerifyEmail,
+      token: code,
+      type: 'signup'
+    });
+
+    if (error) {
+      showNotification("Code ungültig. Bitte erneut eingeben.", "error");
+      codeInput.value = "";
+      return;
+    }
+
+    currentUser = data.user;
+    updateUIForLoggedInUser();
+    showNotification("E-Mail erfolgreich verifiziert!", "success");
+    closeVerifyEmail();
+
+  } catch (err) {
+    console.error(err);
+    showNotification("Ein Fehler ist aufgetreten", "error");
+  }
+}
+
+</script>
 
 <!-- Passwort ändern Formular -->
 <div class="form-overlay" id="changePasswordOverlay" style="display: none;">
@@ -2033,66 +2131,21 @@ document.getElementById('changePasswordForm')?.addEventListener('submit', async 
 });
 </script>
 
-<!-- ERGÄNZUNGEN FÜR ANMELDETIPP UND COMING UPDATE POPUPS -->
 <script>
 // Check ob der Benutzer eingeloggt ist
 function isUserLoggedIn() {
   return currentUser !== null;
 }
 
-// Anmelde-Tipp Popup alle 2 Minuten
+// Anmelde-Tipp Popup alle 5 Minuten
 setInterval(() => {
   if (!isUserLoggedIn()) {
     showLoginReminder();
   }
-}, 2 * 60 * 1000);
-
-function showLoginReminder() {
-  if (sessionStorage.getItem('loginReminderClosed')) return;
-  const overlay = document.createElement('div');
-  overlay.className = 'welcome-overlay';
-  overlay.innerHTML = `
-    <div class="welcome-box">
-      <button class="welcome-close" onclick="this.parentElement.parentElement.remove()">×</button>
-      <h2>🔐 Noch nicht angemeldet?</h2>
-      <p>Melde dich an, um alle Funktionen der EHE Community zu nutzen!</p>
-      <button class="btn btn-primary" onclick="showLoginForm(); closeLoginReminder(this);">Jetzt anmelden</button>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-}
-
-// Coming Update Popup alle 3 Minuten
-setInterval(() => {
-  showComingUpdatePopup();
-}, 3 * 60 * 1000);
-
-function showComingUpdatePopup() {
-  if (sessionStorage.getItem('updatePopupClosed')) return;
-  const overlay = document.createElement('div');
-  overlay.className = 'welcome-overlay';
-  overlay.innerHTML = `
-    <div class="welcome-box">
-      <button class="welcome-close" onclick="this.parentElement.parentElement.remove()">×</button>
-      <h2>🛠️ Neues Update bald!</h2>
-      <p>
-        <strong>Beta Teste</strong> – Teste unsere Webseite als Beta Tester<br/>
-        ✅ Beta Tester Badge<br/>
-        ✅ Beta Funktionen<br/><br/>
-        🔍 Mehr Informationen für unsere Startseite und coole Dienste.<br/>
-        <strong>Update Status:</strong> Kein Datum vorhanden.
-      </p>
-      <button class="btn btn-primary" onclick="this.closest('.welcome-overlay').remove()">Verstanden</button>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-}
-</script>
-
-<!-- SUBMIT-HANDLER FÜR PROFIL SPEICHERN -->
-<script>
+}, 5 * 60 * 1000);
 
 
+<!-- SUBMIT-HANDLER FÜR PROFIL SPEICHERN
   const username = document.getElementById('editUsername').value.trim();
   const email = document.getElementById('editEmail').value.trim();
 
@@ -2200,43 +2253,12 @@ function showComingUpdatePopup() {
 
 <script>
 // Direkt nach Willkommens-Overlay zeigen wir die Reminder automatisch
-document.addEventListener('DOMContentLoaded', async () => {
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  currentUser = session?.user || null;
-
-  const welcomeOverlay = document.getElementById('welcomeOverlay');
-  const observer = new MutationObserver((mutations, obs) => {
-    if (welcomeOverlay && welcomeOverlay.style.display === 'none') {
-      showLoginReminder(); // direkt danach Login Reminder
-      setTimeout(() => showComingUpdatePopup(), 10000); // 10s später Update Popup
-      startPopupIntervals();
-      obs.disconnect();
-    }
-  });
-
-  if (welcomeOverlay) {
-    observer.observe(welcomeOverlay, { attributes: true, attributeFilter: ['style'] });
-  } else {
-    // falls kein Willkommens-Popup angezeigt wird (z. B. bei eingeloggten Nutzern)
-    showLoginReminder();
-    setTimeout(() => showComingUpdatePopup(), 10000);
-    startPopupIntervals();
-  }
-});
-
 function startPopupIntervals() {
   if (!sessionStorage.getItem('loginReminderClosed') && !currentUser) {
     setTimeout(() => {
       showLoginReminder();
     }, 5000);
-  }
-
-  if (!sessionStorage.getItem('updatePopupClosed')) {
-    setTimeout(() => {
-      showComingUpdatePopup();
-    }, 10000);
-  }
-}
+  }}
 
 function showLoginReminder() {
   if (sessionStorage.getItem('loginReminderClosed')) return;
@@ -2249,30 +2271,9 @@ function showLoginReminder() {
       <p>Melde dich an, um alle Funktionen der EHE Community zu nutzen!</p>
       <button class="btn btn-primary" onclick="showLoginForm(); closeLoginReminder(this);">Jetzt anmelden</button>
     </div>
-  `;
+  `
   document.body.appendChild(overlay);
-}
-
-function showComingUpdatePopup() {
-  if (sessionStorage.getItem('updatePopupClosed')) return;
-  const overlay = document.createElement('div');
-  overlay.className = 'welcome-overlay';
-  overlay.innerHTML = `
-    <div class="welcome-box">
-      <button class="welcome-close" onclick="this.parentElement.parentElement.remove()">×</button>
-      <h2>🛠️ Neues Update bald!</h2>
-      <p>
-        <strong>Beta Teste</strong> – Teste unsere Webseite als Beta Tester<br/>
-        ✅ Beta Tester Badge<br/>
-        ✅ Beta Funktionen<br/><br/>
-        🔍 Mehr Informationen für unsere Startseite und coole Dienste.<br/>
-        <strong>Update Status:</strong> Kein Datum vorhanden.
-      </p>
-      <button class="btn btn-primary" onclick="this.closest('.welcome-overlay').remove()">Verstanden</button>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-}
+};
 </script>
 
 <style>
@@ -2368,27 +2369,6 @@ function showLoginReminder() {
       <h2>🔐 Noch nicht angemeldet?</h2>
       <p>Melde dich an, um alle Funktionen der EHE Community zu nutzen!</p>
       <button class="btn btn-primary" onclick="showLoginForm(); closeLoginReminder(this)">Jetzt anmelden</button>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-}
-
-function showComingUpdatePopup() {
-  if (sessionStorage.getItem('updatePopupClosed')) return;
-  const overlay = document.createElement('div');
-  overlay.className = 'welcome-overlay';
-  overlay.innerHTML = `
-    <div class="welcome-box">
-      <button class="welcome-close" onclick="closeUpdatePopup(this)">×</button>
-      <h2>🛠️ Neues Update bald!</h2>
-      <p>
-        <strong>Beta Teste</strong> – Teste unsere Webseite als Beta Tester<br/>
-        ✅ Beta Tester Badge<br/>
-        ✅ Beta Funktionen<br/><br/>
-        🔍 Mehr Informationen für unsere Startseite und coole Dienste.<br/>
-        <strong>Update Status:</strong> Kein Datum vorhanden.
-      </p>
-      <button class="btn btn-primary" onclick="closeUpdatePopup(this)">Verstanden</button>
     </div>
   `;
   document.body.appendChild(overlay);
@@ -3618,7 +3598,16 @@ function getUserBadgesWithDescription(xp) {
 document.addEventListener("keydown", function (e) {
   if (e.key === "Escape") hideBadgePopup();
 });
-</script>
 
-</script>
+// Änderungen im Profil speichern
+document.getElementById("editProfileForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const autoLoginChecked = document.getElementById("editAutoLogin").checked;
+  localStorage.setItem("autoLogin", autoLoginChecked);
+  const selectedTheme = document.getElementById("editTheme").value;
+  setTheme(selectedTheme);
+  hideEditProfileForm();
+  showNotification("Profil gespeichert!", "success");
+}); /* Dis Bitte Nicht Entfernen Vieken dank "Behebt den Fehler"*/
+
 </script>
